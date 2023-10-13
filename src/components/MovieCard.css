@@ -1,7 +1,6 @@
 .movieCard {
   display: grid;
   grid-template-columns: auto auto;
-
   border-radius: 10px;
   background-color: #f4f4f4;
   margin: 5px 0px;
@@ -30,19 +29,40 @@
   color: black;
 }
 
-.titleRow {
-}
+.titleRow {}
 
 .movieRating {
   border: solid 1px lightgrey;
   padding: 0px 4px;
 }
 
-.metaDataRow > span:not(:first-of-type):before {
+.metaDataRow>span:not(:first-of-type):before {
   content: " ‧ ";
 }
 
 .ratingsRow {
-  vertical-align: top; 
-  height: 40px;
+  vertical-align: top;
+  height: 30px;
+}
+
+.ratingsRow * {
+  vertical-align: middle;
+}
+
+.tomatoLogo {
+  width: 30px;
+  height: 30px;
+}
+
+.imdbLogo {
+  width: 40px;
+  height: 22px;
+  padding-left: 25%;
+}
+
+.ratingScore {
+  padding-left: 8px;
+  display: inline-block;
+  font-size: 15px;
+  font-weight: bold;
 }
