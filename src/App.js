@@ -7,7 +7,7 @@ function App() {
   var data = require('./data.json');
 
   return (
-    <div className="App">
+    <div className="container">
       {/* <header className="App-header">
       </header> */}
 
@@ -23,10 +23,6 @@ function App() {
           })}
         </Movies>
       </div>
-
-
-
-
     </div>
   );
 }

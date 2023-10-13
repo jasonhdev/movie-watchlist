@@ -2,24 +2,36 @@ import './MovieCard.css';
 
 const MovieCard = ({ movie }) => {
     return (
-        <div>
-            <img class="movieImg" src="default.png"></img>
+        <div className="movieCard">
+            <div className="imgContainer">
+                <img className="movieImg" src={'https://' + movie.image} alt={'Movie poster for ' + movie.search}></img>
+            </div>
 
-            <h2>{movie.title}</h2>
+            <div className="infoContainer">
+                    <div className="titleRow">
+                        <a className="title" target="_blank" rel="noreferrer" href={'https://www.google.com/search?q=' + movie.title}>{movie.title}</a>
+                        {/* TODO: Add settings */}
+                    </div>
 
-            <p><span><span>{movie.rating}</span>&nbsp;‧&nbsp;</span>
-                <span>{movie.year} &nbsp;‧&nbsp; </span>
-                <span>{movie.runtime}</span>
-            </p>
-            <p><i>{movie.genre}</i></p>
-            <p>Watch on {movie.services}</p>
+                    <p className="metaDataRow">
+                        {movie.rating &&
+                            <span className="movieRating">{movie.rating}</span>
+                        }
+                        <span>{movie.year}</span>
+                        <span>{movie.runtime}</span>
+                    </p>
 
-            <p>Tomato</p>
-            <p>IMdB</p>
+                    <p>
+                        <i>{movie.genre}</i>
+                    </p>
 
-            <p>{movie.description}</p>
+                    {/* TODO: Mising logic */}
+                    <p>Watch on:</p>
 
-        </div>
+                    {/* TODO: Expand/hide desc */}
+                    <p>{movie.description}</p>
+                </div>
+            </div>
     );
 };
 
