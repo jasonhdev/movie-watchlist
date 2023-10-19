@@ -1,6 +1,6 @@
 const Movies = ({ children }) => {
     return (
-        <div>{children}</div>
+        <div className="movies">{children}</div>
     );
 };
 

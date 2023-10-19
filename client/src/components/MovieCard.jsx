@@ -29,15 +29,15 @@ const MovieCard = ({ movie }) => {
                     <div className="scoresRow">
                         {movie.tomato &&
                             <span>
-                                <img class="tomatoLogo" src="tomato.png" alt="Logo for Rotten Tomatos"></img>
-                                <span class="score">{movie.tomato}</span>
+                                <img className="tomatoLogo" src="tomato.png" alt="Logo for Rotten Tomatos"></img>
+                                <span className="score">{movie.tomato}</span>
                             </span>
                         }
 
                         {movie.imdb &&
                             <span>
-                                <img class="imdbLogo" src="imdb.png" alt="Logo for IMDB"></img>
-                                <span class="score">{movie.imdb}</span>
+                                <img className="imdbLogo" src="imdb.png" alt="Logo for IMDB"></img>
+                                <span className="score">{movie.imdb}</span>
                             </span>
                         }
                     </div>
@@ -49,7 +49,7 @@ const MovieCard = ({ movie }) => {
                 }
 
                 {/* TODO: Expand/hide desc */}
-                <p class="description">{movie.description}</p>
+                <p className="description">{movie.description}</p>
             </div>
         </div>
     );
