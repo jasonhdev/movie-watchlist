@@ -1,16 +1,8 @@
-import { useState } from "react";
-
 import './Header.scss';
 import Searchbar from './Searchbar.jsx';
 import Tabs from './Tabs';
 
-const Header = () => {
-
-    const [currentTab, setCurrentTab] = useState('watch');
-
-    const handleTabChange = (tab) => {
-        setCurrentTab(tab);
-    }
+const Header = ({handleTabChange, currentTab}) => {
 
     return (
         <div className="header">
@@ -18,7 +10,7 @@ const Header = () => {
             <div className="searchBar">
                 <Searchbar currentTab={currentTab}></Searchbar>
             </div>
-            <Tabs handleTabChange={handleTabChange}></Tabs>
+            <Tabs handleTabChange={handleTabChange} currentTab={currentTab}></Tabs>
         </div>
     );
 };

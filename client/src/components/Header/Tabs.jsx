@@ -1,15 +1,12 @@
 import "./Header.scss";
-import { useState } from "react";
 
-const Tabs = ({ handleTabChange }) => {
+const Tabs = ({ handleTabChange, currentTab }) => {
 
     let tabs = {
         'watch': 'Watch',
         'upcoming': 'Upcoming',
         'history': 'History',
     };
-
-    const [currentTab, setCurrentTab] = useState('watch');
 
     return (
         <div className="tabs">
@@ -19,7 +16,6 @@ const Tabs = ({ handleTabChange }) => {
                         key={tabKey}
                         className={`tab-btn ${tabKey === currentTab ? 'active' : ''}`}
                         onClick={() => {
-                            setCurrentTab(tabKey);
                             handleTabChange(tabKey);
                         }}>
                         {tabName}
