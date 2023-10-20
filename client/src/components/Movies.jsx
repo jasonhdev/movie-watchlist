@@ -1,6 +1,19 @@
-const Movies = ({ children }) => {
+import MovieCard from "./MovieCard"
+
+const Movies = ({ movies }) => {
     return (
-        <div className="movies">{children}</div>
+        <div className="movies">
+            {movies !== null &&
+                movies.map((movie, i) => {
+                    return (
+                        <MovieCard
+                            key={i}
+                            movie={movie}
+                        />
+                    );
+                })
+            }
+        </div>
     );
 };
 

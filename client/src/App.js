@@ -1,9 +1,8 @@
 import './App.css';
 import Movies from "./components/Movies"
-import MovieCard from "./components/MovieCard"
 import Header from "./components/Header/Header"
 
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 
 function App() {
   const [currentTab, setCurrentTab] = useState('watch');
@@ -33,19 +32,7 @@ function App() {
       </header> */}
 
       <Header handleTabChange={handleTabChange} currentTab={currentTab}></Header>
-
-      <Movies>
-        {movies !== null &&
-          movies.map((movie, i) => {
-            return (
-              <MovieCard
-                key={i}
-                movie={movie}
-              />
-            );
-          })
-        }
-      </Movies>
+      <Movies movies={movies}></Movies>
     </div>
   );
 }
