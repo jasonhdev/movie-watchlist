@@ -6,9 +6,6 @@ import Header from "./components/Header/Header"
 import React, { useState, useEffect } from "react";
 
 function App() {
-
-  var data = require('./data.json');
-
   const [currentTab, setCurrentTab] = useState('watch');
   const [movies, setMovies] = useState(null);
 

@@ -4,7 +4,9 @@ const MovieCard = ({ movie }) => {
     return (
         <div className="movieCard">
             <div className="posterContainer">
-                <img src={'https://' + movie.image} alt={'Movie poster for ' + movie.search}></img>
+                <a href={movie.trailer} target="_blank" rel="noreferrer">
+                    <img className={movie.image ? "fallbackPoster" : ""} src={movie.image ? 'https://' + movie.image : "default.png"} alt={'Movie poster for ' + movie.search}></img>
+                </a>
             </div>
 
             <div className="infoContainer">
