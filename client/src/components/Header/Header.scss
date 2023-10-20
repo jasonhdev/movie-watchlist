@@ -52,6 +52,7 @@
 .tabs {
     grid-column: span 2;
     border: 1px solid #ccc;
+    box-sizing: border-box;
     background-color: #f1f1f1;
     width: 100%;
 
