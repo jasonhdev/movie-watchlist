@@ -1,6 +1,6 @@
 import './MovieCard.scss';
 
-const MovieCard = ({ movie }) => {
+const MovieCard = ({ movie, currentTab }) => {
     return (
         <div className="movieCard">
             <div className="posterContainer">
@@ -16,16 +16,21 @@ const MovieCard = ({ movie }) => {
                 </div>
 
                 <p className="metaDataRow">
-                    {movie.rating &&
-                        <span className="rating">{movie.rating}</span>
-                    }
-                    <span>{movie.year}</span>
-                    <span>{movie.runtime}</span>
+                    {movie.rating && <span className="rating">{movie.rating}</span>}
+                    {movie.year && <span>{movie.year}</span>}
+                    {movie.runtime && <span>{movie.runtime}</span>}
                 </p>
 
                 <p>
                     <i>{movie.genre}</i>
                 </p>
+
+                {
+                    (currentTab == 'watch' && movie.services) ? <p>Watch on: {movie.services}</p>
+                        : (currentTab == 'upcoming') ? <p>Release Date: {movie.release_date ?? "TBD"}</p>
+                            : (currentTab == 'history') ? <p>Watched on: {movie.watched_date}</p>
+                                : ""
+                }
 
                 {(movie.tomato || movie.imdb) &&
                     <div className="scoresRow">
@@ -43,11 +48,6 @@ const MovieCard = ({ movie }) => {
                             </span>
                         }
                     </div>
-                }
-
-                {/* TODO: Mising logic */}
-                {movie.services &&
-                    <p>Watch on: {movie.services}</p>
                 }
 
                 {/* TODO: Expand/hide desc */}

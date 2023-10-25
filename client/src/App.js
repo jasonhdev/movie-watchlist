@@ -32,7 +32,7 @@ function App() {
       </header> */}
 
       <Header handleTabChange={handleTabChange} currentTab={currentTab}></Header>
-      <Movies movies={movies}></Movies>
+      <Movies movies={movies} currentTab={currentTab}></Movies>
     </div>
   );
 }
