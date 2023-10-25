@@ -6,7 +6,7 @@ import { useState, useEffect } from "react";
 
 function App() {
   const [currentTab, setCurrentTab] = useState('watch');
-  const [movies, setMovies] = useState(null);
+  const [movies, setMovies] = useState([]);
 
   useEffect(() => {
     const loadMovies = async () => {
