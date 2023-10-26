@@ -15,7 +15,7 @@
         max-width: 135px;
         vertical-align: middle;
         border-radius: 10px;
-        
+
         &.fallbackPoster {
             height: 100%;
             width: 100%;
@@ -28,7 +28,7 @@
     padding-left: 8px;
 
     * {
-        margin: 2px 0;
+        margin: 1px 0;
     }
 
     display: flex;
@@ -56,30 +56,38 @@
 }
 
 .scoresRow {
-    vertical-align: top;
-    height: 30px;
     margin-bottom: 6px;
-
-    * {
-        vertical-align: middle;
-    }
-
-    .tomatoLogo {
-        width: 30px;
-        height: 30px;
-    }
-
-    .imdbLogo {
-        width: 40px;
-        height: 22px;
-        padding-left: 25%;
-    }
+    display: grid;
+    grid-template-columns: 80px auto;
+    max-width: 600px;
 
     .score {
         padding-left: 8px;
-        display: inline-block;
         font-size: 15px;
         font-weight: bold;
+        vertical-align: top;
+    }
+
+    .tomatoCol {
+        img {
+            width: 30px;
+            height: 30px;
+        }
+
+        .score {
+            display: inline-block;
+            margin-top: 6px;
+        }
+    }
+
+    .imdbCol {
+        justify-self: center;
+        margin-top: 8px;
+
+        img {
+            width: 40px;
+            height: 22px;
+        }
     }
 }
 

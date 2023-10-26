@@ -34,15 +34,16 @@ const MovieCard = ({ movie, currentTab }) => {
 
                 {(movie.tomato || movie.imdb) &&
                     <div className="scoresRow">
-                        {movie.tomato &&
-                            <span>
-                                <img className="tomatoLogo" src="tomato.png" alt="Logo for Rotten Tomatos"></img>
-                                <span className="score">{movie.tomato}</span>
-                            </span>
-                        }
-
+                        <span className="tomatoCol">
+                            {movie.tomato &&
+                                <span>
+                                    <img src="tomato.png" alt="Logo for Rotten Tomato"></img>
+                                    <span className="score">{movie.tomato}</span>
+                                </span>
+                            }
+                        </span>
                         {movie.imdb &&
-                            <span>
+                            <span className="imdbCol">
                                 <img className="imdbLogo" src="imdb.png" alt="Logo for IMDB"></img>
                                 <span className="score">{movie.imdb}</span>
                             </span>
