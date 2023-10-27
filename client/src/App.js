@@ -2,19 +2,24 @@ import './App.css';
 import Movies from "./components/Movies"
 import Header from "./components/Header/Header"
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 
 function App() {
   const [currentTab, setCurrentTab] = useState('watch');
   const [movies, setMovies] = useState([]);
   const [moviesCache, setMoviesCache] = useState([]);
+  const searchInputRef = useRef();
 
+  // On page load
   useEffect(() => {
     const loadMovies = async () => {
       setMovies(await getMovies());
     }
 
     loadMovies();
+
+    // Set focus on search input anytime key is pressed
+    document.addEventListener("keydown", () => { searchInputRef.current.focus() }, true);
   }, [])
 
   const handleTabChange = async (tab) => {
@@ -53,7 +58,7 @@ function App() {
       {/* <header className="App-header">
       </header> */}
 
-      <Header handleTabChange={handleTabChange} handleSearchInput={handleSearchInput} currentTab={currentTab}></Header>
+      <Header handleTabChange={handleTabChange} handleSearchInput={handleSearchInput} currentTab={currentTab} searchInputRef={searchInputRef}></Header>
       <Movies movies={movies} currentTab={currentTab}></Movies>
     </div>
   );
