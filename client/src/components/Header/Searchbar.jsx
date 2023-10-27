@@ -1,11 +1,12 @@
 import "./Header.scss";
+import Constants from "../../Constants";
 
 const Searchbar = ({ handleSearchInput, currentTab, searchInputRef }) => {
 
   const placeholders = {
-    "watch": "Add a movie",
-    "upcoming": "Add upcoming movie",
-    "history": "Add watched movie",
+    [Constants.TAB_WATCH]: "Add a movie",
+    [Constants.TAB_UPCOMING]: "Add upcoming movie",
+    [Constants.TAB_HISTORY]: "Add watched movie",
   }
 
   return (

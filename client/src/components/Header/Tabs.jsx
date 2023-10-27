@@ -1,11 +1,12 @@
 import "./Header.scss";
+import Constants from "../../Constants";
 
 const Tabs = ({ handleTabChange, currentTab }) => {
 
-    let tabs = {
-        'watch': 'Watch',
-        'upcoming': 'Upcoming',
-        'history': 'History',
+    const tabs = {
+        [Constants.TAB_WATCH]: 'Watch',
+        [Constants.TAB_UPCOMING]: 'Upcoming',
+        [Constants.TAB_HISTORY]: 'History',
     };
 
     return (

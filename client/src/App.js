@@ -1,11 +1,12 @@
 import './App.css';
 import Movies from "./components/Movies"
 import Header from "./components/Header/Header"
+import Constants from "./Constants"
 
 import { useState, useEffect, useRef } from "react";
 
 function App() {
-  const [currentTab, setCurrentTab] = useState('watch');
+  const [currentTab, setCurrentTab] = useState(Constants.TAB_WATCH);
   const [movies, setMovies] = useState([]);
   const [moviesCache, setMoviesCache] = useState([]);
   const searchInputRef = useRef();
@@ -49,7 +50,7 @@ function App() {
   }
 
   const getMovies = async (list = "watch") => {
-    const response = await fetch('http://watchapi.pizzachicken.xyz/?list=' + list)
+    const response = await fetch('https://watchapi.pizzachicken.xyz/?list=' + list)
     return await response.json();
   }
 
