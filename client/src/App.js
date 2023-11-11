@@ -50,7 +50,7 @@ function App() {
   }
 
   const getMovies = async (list = "watch") => {
-    const response = await fetch('https://watchapi.pizzachicken.xyz/?list=' + list)
+    const response = await fetch(process.env.REACT_APP_API_URL + "?list=" + list);
     return await response.json();
   }
 

@@ -17,7 +17,7 @@ class MovieController extends Controller
                 $movies = Movie::select('*')
                     ->where('watched', '=', 0)
                     ->where('released', '=', 0)
-                    ->orderBy('released_date', 'desc')
+                    ->orderBy('release_date', 'desc')
                     ->get();
                 break;
             case "history":
