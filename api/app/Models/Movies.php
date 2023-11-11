@@ -12,7 +12,7 @@ class Movies extends Model
     protected $table = 'movies';
     protected $fillable = [
         'title',
-        'descripton',
+        'description',
         'tomato',
         'imdb',
         'poster_url', // originally 'image'
