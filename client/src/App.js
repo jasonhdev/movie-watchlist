@@ -10,11 +10,21 @@ function App() {
   const [movies, setMovies] = useState([]);
   const [moviesCache, setMoviesCache] = useState([]);
   const searchInputRef = useRef();
+  const [isLoaded, setIsLoaded] = useState(false);
 
   // On page load
   useEffect(() => {
     const loadMovies = async () => {
-      setMovies(await getMovies());
+      const watch = await fetchMovieList('watch');
+
+      setMovies(watch);
+      setMoviesCache({
+        'watch': watch,
+        'upcoming': await fetchMovieList('upcoming'),
+        'history': await fetchMovieList('history'),
+      });
+
+      setIsLoaded(true);
     }
 
     loadMovies();
@@ -25,36 +35,24 @@ function App() {
 
   const handleTabChange = async (tab) => {
     setCurrentTab(tab);
-    setMovies(await getMovies(tab));
+    setMovies(moviesCache[tab]);
   }
 
   const handleSearchInput = (e) => {
     let search = e.target.value;
 
-    if (!search) {
-      setMovies(moviesCache);
-      setMoviesCache([]);
-    } else {
-      if (!moviesCache.length) {
-        setMoviesCache(movies);
-        setMovies(movies.filter((movie) => {
-          return search.toLowerCase().split(' ').every(v => movie.title.toLowerCase().includes(v))
-        }));
-      }
-      else {
-        setMovies(moviesCache.filter((movie) => {
-          return search.toLowerCase().split(' ').every(v => movie.title.toLowerCase().includes(v))
-        }));
-      }
-    }
+    setMovies(moviesCache[currentTab].filter((movie) => {
+      return search.toLowerCase().split(' ').every(v => movie.title.toLowerCase().includes(v))
+    }));
   }
 
-  const getMovies = async (list = "watch") => {
+  const fetchMovieList = async (list = "watch") => {
     const response = await fetch(process.env.REACT_APP_API_URL + "?list=" + list);
     return await response.json();
   }
 
   return (
+    isLoaded === true &&
     <div className="container">
       {/* <header className="App-header">
       </header> */}
