@@ -26,3 +26,6 @@ Route::get('/movie/search', [MovieController::class, 'searchMovie']);
 Route::post('/movie/create', [MovieController::class, 'createMovie']);
 Route::put('/movie/update/{id}', [MovieController::class, 'updateMovie']);
 Route::delete('/movie/delete/{id}', [MovieController::class, 'deleteMovie']);
+
+// Route::get('/movie/create', [MovieController::class, 'createMovie']);
+// Route::get('/movie/update/{id}', [MovieController::class, 'updateMovie']);
