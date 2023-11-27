@@ -105,3 +105,62 @@
         display: none;
     }
 }
+
+// Screen overlay to close and show one setting menu at a time
+#overlay {
+    width: 100vw;
+    height: 100vh;
+    position: fixed;
+    top: 0px;
+    left: 0px;
+}
+
+.openSettingsBtn {
+    float: right;
+    color: grey;
+    font-size: 20px;
+    padding-top: 10px;
+    padding-right: 10px;
+    text-align: right;
+    width: 50px;
+
+    &:hover {
+        color: black;
+    }
+}
+
+.settingsMenu {
+    position: relative;
+    z-index: 1;
+
+    .actions {
+        position: absolute;
+        top: 0;
+        right: 0;
+        margin-top: -30px;
+        margin-right: 4px;
+        width: 200px;
+        box-shadow: -8px 8px 12px 1px #aaaaaa;
+    }
+
+    .fas {
+        padding-left: 10px;
+        padding-right: 20px;
+        color: grey;
+    }
+
+    button {
+        padding: 13px 10px;
+        font-size: 16px;
+        width: 100%;
+        border: none;
+        cursor: pointer;
+        background-color: white;
+        text-decoration: none;
+        text-align: left;
+
+        &:hover {
+            background-color: #e6fff5;
+        }
+    }
+}

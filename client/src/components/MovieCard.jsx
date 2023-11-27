@@ -1,4 +1,6 @@
 import './MovieCard.scss';
+import './Settings';
+import Settings from './Settings';
 import Constants from "../Constants";
 
 const MovieCard = ({ movie, currentTab }) => {
@@ -13,7 +15,7 @@ const MovieCard = ({ movie, currentTab }) => {
             <div className="infoContainer">
                 <div className="titleRow">
                     <a target="_blank" rel="noreferrer" href={'https://www.google.com/search?q=' + movie.title}>{movie.title}</a>
-                    {/* TODO: Add settings */}
+                    <Settings movie={movie} currentTab={currentTab}></Settings>
                 </div>
 
                 <p className="metaDataRow">
@@ -27,9 +29,9 @@ const MovieCard = ({ movie, currentTab }) => {
                 </p>
 
                 {
-                    (currentTab == Constants.TAB_WATCH && movie.services) ? <p>Watch on: {movie.services}</p>
-                        : (currentTab == Constants.TAB_UPCOMING) ? <p>Release Date: {movie.release_date ?? "TBD"}</p>
-                            : (currentTab == Constants.TAB_HISTORY) ? <p>Watched on: {movie.watched_date}</p>
+                    (currentTab === Constants.TAB_WATCH && movie.services) ? <p>Watch on: {movie.services}</p>
+                        : (currentTab === Constants.TAB_UPCOMING) ? <p>Release Date: {movie.release_date ?? "TBD"}</p>
+                            : (currentTab === Constants.TAB_HISTORY) ? <p>Watched on: {movie.watched_date}</p>
                                 : ""
                 }
 
@@ -37,10 +39,10 @@ const MovieCard = ({ movie, currentTab }) => {
                     <div className="scoresRow">
                         <span className="tomatoCol">
                             {movie.tomato &&
-                                <span>
+                                <>
                                     <img src="tomato.png" alt="Logo for Rotten Tomato"></img>
                                     <span className="score">{movie.tomato}</span>
-                                </span>
+                                </>
                             }
                         </span>
                         {movie.imdb &&
