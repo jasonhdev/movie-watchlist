@@ -14,20 +14,20 @@ const Settings = ({ movie, currentTab }) => {
     return (
 
         <span>
-            <i onClick={toggleShowSettings} class="fas fa-ellipsis-v openSettingsBtn"></i>
+            <i onClick={toggleShowSettings} className="fas fa-ellipsis-v openSettingsBtn"></i>
 
             {showSettings &&
                 <>
-                    <div class="settingsMenu">
-                        <div class="actions">
+                    <div className="settingsMenu">
+                        <div className="actions">
                             {currentTab == 'watch' &&
                                 <>
                                     <button>
-                                        <i class="fas fa-eye"></i>
+                                        <i className="fas fa-eye"></i>
                                         <span>Watched</span>
                                     </button>
                                     <button onClick={toggleFeatured}>
-                                        <i class="fas fa-star"></i>
+                                        <i className="fas fa-star"></i>
                                         {movie.featured ? 'Unfeature' : 'Feature'}
                                     </button>
                                 </>
@@ -35,7 +35,7 @@ const Settings = ({ movie, currentTab }) => {
 
                             {(currentTab === 'upcoming' || currentTab === 'history' || currentTab === 'amc') &&
                                 <button>
-                                    <i class="fas fa-video"></i>
+                                    <i className="fas fa-video"></i>
                                     <span>Move to Watch</span>
                                 </button>
                             }
@@ -43,11 +43,11 @@ const Settings = ({ movie, currentTab }) => {
                             {currentTab !== 'amc' &&
                                 <>
                                     <button>
-                                        <i class="fas fa-sync-alt"></i>
+                                        <i className="fas fa-sync-alt"></i>
                                         <span>Refresh Info</span>
                                     </button>
                                     <button>
-                                        <i class="fas fa-trash"></i>
+                                        <i className="fas fa-trash"></i>
                                         <span>Delete</span>
                                     </button>
                                 </>

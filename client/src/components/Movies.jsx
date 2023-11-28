@@ -28,7 +28,7 @@ const Movies = ({ movies, currentTab }) => {
                 <InfiniteScroll
                     loadMore={loadMovies}
                     hasMore={hasMore}
-                    loader={<h4>Loading...</h4>}
+                    loader={<h4 key={0}>Loading...</h4>}
                 >
                     {movies.slice(0, displayCount).map((movie, i) => {
                         return (
