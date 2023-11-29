@@ -139,12 +139,12 @@ class MovieController extends Controller
             $movie = Movie::find($id);
 
             if ($request->has('watched')) {
-                $movie->watched = $request('watched');
+                $movie->watched = $request->watched;
                 $movie->watched_date = $currentDate;
             }
 
             if ($request->has('featured')) {
-                $movie->featured = $request('featured');
+                $movie->featured = $request->featured;
             }
 
             if ($request->get('action') === 'refresh') {

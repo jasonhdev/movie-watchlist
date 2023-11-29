@@ -1,12 +1,28 @@
 import { useState, useEffect, useRef } from "react";
 
-const Settings = ({ movie, currentTab }) => {
+const Settings = ({ movie, currentTab, handleMovieUpdate }) => {
     const toggleShowSettings = () => {
         setShowSettings(!showSettings);
     }
 
-    const toggleFeatured = () => {
-        // TODO: wire up buttons and add featured star
+    const toggleFeatured = async () => {
+        const postBody = { 'featured': !movie.featured };
+        const requestOptions = {
+            method: "PUT",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify(postBody)
+        }
+
+        const res = await fetch(`http://localhost/WatchlistConversions/watchlistV2/api/public/api/movie/update/${movie.id}`, requestOptions)
+            .then((response) => {
+                response.json().then((data) => {
+                    console.log(data);
+                    handleMovieUpdate(data);
+                    return data;
+                });
+            });
     }
 
     const [showSettings, setShowSettings] = useState(false);

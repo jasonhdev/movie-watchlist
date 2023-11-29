@@ -3,7 +3,7 @@ import './Settings';
 import Settings from './Settings';
 import Constants from "../Constants";
 
-const MovieCard = ({ movie, currentTab }) => {
+const MovieCard = ({ movie, currentTab, handleMovieUpdate }) => {
     return (
         <div className="movieCard">
             <div className="posterContainer">
@@ -16,7 +16,7 @@ const MovieCard = ({ movie, currentTab }) => {
             <div className="infoContainer">
                 <div className="titleRow">
                     <a target="_blank" rel="noreferrer" href={'https://www.google.com/search?q=' + movie.title}>{movie.title}</a>
-                    <Settings movie={movie} currentTab={currentTab}></Settings>
+                    <Settings movie={movie} currentTab={currentTab} handleMovieUpdate={handleMovieUpdate}></Settings>
                 </div>
 
                 <p className="metaDataRow">

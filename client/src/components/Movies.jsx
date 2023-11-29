@@ -2,7 +2,7 @@ import MovieCard from "./MovieCard"
 import InfiniteScroll from 'react-infinite-scroller';
 import { useState, useEffect } from "react";
 
-const Movies = ({ movies, currentTab }) => {
+const Movies = ({ movies, currentTab, handleMovieUpdate }) => {
 
     const displayIncrementCount = 10;
 
@@ -36,6 +36,7 @@ const Movies = ({ movies, currentTab }) => {
                                 key={i}
                                 movie={movie}
                                 currentTab={currentTab}
+                                handleMovieUpdate={handleMovieUpdate}
                             />
                         );
                     })}

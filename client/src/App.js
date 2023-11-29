@@ -46,6 +46,15 @@ function App() {
     }));
   }
 
+  const refreshMovieUpdate = (data) => {
+    const movieIndex = movies.findIndex(movie => movie.id === data.movie.id);
+    const moviesRef = [...movies];
+
+    moviesRef[movieIndex] = data.movie;
+
+    setMovies(moviesRef);
+  }
+
   const fetchMovieList = async (list = "watch") => {
     const response = await fetch(process.env.REACT_APP_API_URL + "?list=" + list);
     return await response.json();
@@ -58,7 +67,7 @@ function App() {
       </header> */}
 
       <Header handleTabChange={handleTabChange} handleSearchInput={handleSearchInput} currentTab={currentTab} searchInputRef={searchInputRef}></Header>
-      <Movies movies={movies} currentTab={currentTab}></Movies>
+      <Movies movies={movies} currentTab={currentTab} handleMovieUpdate={handleMovieUpdate}></Movies>
     </div>
   );
 }
