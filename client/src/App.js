@@ -15,13 +15,13 @@ function App() {
   // On page load
   useEffect(() => {
     const loadMovies = async () => {
-      const watch = await fetchMovieList('watch');
+      const watch = await fetchMovieList(Constants.TAB_WATCH);
 
       setMovies(watch);
       setMoviesCache({
-        'watch': watch,
-        'upcoming': await fetchMovieList('upcoming'),
-        'history': await fetchMovieList('history'),
+        [Constants.TAB_WATCH]: watch,
+        [Constants.TAB_UPCOMING]: await fetchMovieList(Constants.TAB_UPCOMING),
+        [Constants.TAB_HISTORY]: await fetchMovieList(Constants.TAB_HISTORY),
       });
 
       setIsLoaded(true);
@@ -46,16 +46,32 @@ function App() {
     }));
   }
 
-  const refreshMovieUpdate = (data) => {
-    const movieIndex = movies.findIndex(movie => movie.id === data.movie.id);
-    const moviesRef = [...movies];
+  const handleMovieUpdate = async (data) => {
+    const index = movies.findIndex(movie => movie.id === data.movie.id);
 
-    moviesRef[movieIndex] = data.movie;
+    if (data.action === Constants.ACTION_WATCH) {
+      const moviesRef = [...movies];
 
-    setMovies(moviesRef);
+      moviesRef[index] = data.movie;
+
+      if (!data.movie.watched && currentTab !== Constants.TAB_UPCOMING) {
+        moviesCache[Constants.TAB_WATCH].unshift(moviesRef[index]);
+      } else {
+        moviesCache[Constants.TAB_HISTORY].unshift(moviesRef[index]);
+      }
+
+      moviesRef.splice(index, 1);
+      moviesCache[currentTab] = moviesRef;
+
+      setMovies(moviesRef);
+
+    } else if (data.action === Constants.ACTION_FEATURE) {
+      const watch = await fetchMovieList(currentTab);
+      setMovies(watch);
+    }
   }
 
-  const fetchMovieList = async (list = "watch") => {
+  const fetchMovieList = async (list = Constants.TAB_WATCH) => {
     const response = await fetch(process.env.REACT_APP_API_URL + "?list=" + list);
     return await response.json();
   }

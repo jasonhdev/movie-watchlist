@@ -15,6 +15,11 @@ class MovieController extends Controller
     const LIST_HISTORY = "history";
     const LIST_AMC = "amc";
 
+    const ACTION_WATCH = "watch";
+    const ACTION_FEATURE = "feature";
+    const ACTION_DELETE = "delete";
+    const ACTION_REFRESH = "refresh";
+
     public function index(Request $request): JsonResponse
     {
         $list = $request->list;
@@ -138,38 +143,46 @@ class MovieController extends Controller
         if (Movie::where('id', $id)->exists()) {
             $movie = Movie::find($id);
 
-            if ($request->has('watched')) {
-                $movie->watched = $request->watched;
-                $movie->watched_date = $currentDate;
-            }
+            $action = $request->get('action');
 
-            if ($request->has('featured')) {
-                $movie->featured = $request->featured;
-            }
+            switch ($action) {
+                case self::ACTION_WATCH:
+                    $movie->watched = $request->watched;
+                    $movie->watched_date = $currentDate;
+                    break;
 
-            if ($request->get('action') === 'refresh') {
-                if ($searchResponse = $this->searchMovie($request)) {
+                case self::ACTION_FEATURE:
+                    $movie->featured = $request->featured;
+                    break;
 
-                    $movieData = json_decode(json_decode($searchResponse->getContent(), true)['movieData'], true);
+                case self::ACTION_REFRESH:
+                    if ($searchResponse = $this->searchMovie($request)) {
 
-                    $movie->title = $movieData['title'];
-                    $movie->description = $movieData['description'];
-                    $movie->tomato = $movieData['tomato'];
-                    $movie->imdb = $movieData['imdb'];
-                    $movie->poster_url = $movieData['image'];
-                    $movie->trailer_url = $movieData['trailer'];
-                    $movie->rating = $movieData['rating'];
-                    $movie->year = $movieData['year'];
-                    $movie->genre = $movieData['genre'];
-                    $movie->runtime = $movieData['runtime'];
-                    $movie->services = $movieData['services'];
-                }
+                        $movieData = json_decode(json_decode($searchResponse->getContent(), true)['movieData'], true);
+
+                        $movie->title = $movieData['title'];
+                        $movie->description = $movieData['description'];
+                        $movie->tomato = $movieData['tomato'];
+                        $movie->imdb = $movieData['imdb'];
+                        $movie->poster_url = $movieData['image'];
+                        $movie->trailer_url = $movieData['trailer'];
+                        $movie->rating = $movieData['rating'];
+                        $movie->year = $movieData['year'];
+                        $movie->genre = $movieData['genre'];
+                        $movie->runtime = $movieData['runtime'];
+                        $movie->services = $movieData['services'];
+                    }
+                    break;
+
+                default:
+                    break;
             }
 
             $movie->save();
 
             return response()->json([
                 'message' => 'Movie updated.',
+                'action' => $action,
                 'movie' => $movie,
             ]);
         } else {

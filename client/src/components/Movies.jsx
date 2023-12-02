@@ -4,18 +4,18 @@ import { useState, useEffect } from "react";
 
 const Movies = ({ movies, currentTab, handleMovieUpdate }) => {
 
-    const displayIncrementCount = 10;
+    const DISPLAY_INCREMENT_COUNT = 10;
 
-    const [displayCount, setDisplayCount] = useState(displayIncrementCount);
+    const [displayCount, setDisplayCount] = useState(DISPLAY_INCREMENT_COUNT);
     const [hasMore, setHasMore] = useState(true);
 
     useEffect(() => {
         setHasMore(true);
-        setDisplayCount(displayIncrementCount);
+        setDisplayCount(DISPLAY_INCREMENT_COUNT);
     }, [movies]);
 
     const loadMovies = () => {
-        setDisplayCount(displayCount + displayIncrementCount);
+        setDisplayCount(displayCount + DISPLAY_INCREMENT_COUNT);
 
         if (displayCount > movies.length) {
             setHasMore(false);
