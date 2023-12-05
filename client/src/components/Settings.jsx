@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import Constants from "../Constants"
 
-const Settings = ({ movie, currentTab, handleMovieUpdate }) => {
+const Settings = ({ movie, currentTab, updateMovieCard }) => {
 
     const UPDATE_URL = `http://localhost/WatchlistConversions/watchlistV2/api/public/api/movie/update/${movie.id}`;
     const updateRequestOptions = {
@@ -15,7 +15,7 @@ const Settings = ({ movie, currentTab, handleMovieUpdate }) => {
         setShowSettings(!showSettings);
     }
 
-    const toggleWatched = async () => {
+    const handleWatchAction = async () => {
         updateRequestOptions.body = JSON.stringify({
             'action': Constants.ACTION_WATCH,
             'watched': !movie.watched
@@ -23,10 +23,12 @@ const Settings = ({ movie, currentTab, handleMovieUpdate }) => {
 
         await fetch(UPDATE_URL, updateRequestOptions)
             .then((res) => res.json())
-            .then((json) => handleMovieUpdate(json));
+            .then((json) => updateMovieCard(json));
+
+        setShowSettings(false);
     }
 
-    const toggleFeatured = async () => {
+    const handleFeatureAction = async () => {
         updateRequestOptions.body = JSON.stringify({
             'action': Constants.ACTION_FEATURE,
             'featured': !movie.featured
@@ -34,8 +36,34 @@ const Settings = ({ movie, currentTab, handleMovieUpdate }) => {
 
         await fetch(UPDATE_URL, updateRequestOptions)
             .then((res) => res.json())
-            .then((json) => handleMovieUpdate(json));
+            .then((json) => updateMovieCard(json));
+
+        setShowSettings(false);
     }
+
+    const handleDeleteAction = async () => {
+        updateRequestOptions.method = "DELETE";
+        await fetch(`http://localhost/WatchlistConversions/watchlistV2/api/public/api/movie/delete/${movie.id}`, updateRequestOptions)
+            .then((res) => res.json())
+            .then((json) => updateMovieCard(json));
+
+        setShowSettings(false);
+    }
+
+    const handleRefreshAction = async () => {
+        updateRequestOptions.body = JSON.stringify({
+            'action': Constants.ACTION_REFRESH,
+            'searchTerm': movie.searchTerm,
+        })
+
+        setShowSettings(false);
+        
+        await fetch(`http://localhost/WatchlistConversions/watchlistV2/api/public/api/movie/update/${movie.id}`, updateRequestOptions)
+            .then((res) => res.json())
+            .then((json) => {
+                updateMovieCard(json);
+            });
+    }   
 
     const [showSettings, setShowSettings] = useState(false);
 
@@ -48,13 +76,13 @@ const Settings = ({ movie, currentTab, handleMovieUpdate }) => {
                 <>
                     <div className="settingsMenu">
                         <div className="actions">
-                            <button onClick={toggleWatched}>
+                            <button onClick={handleWatchAction}>
                                 <i className={movie.watched ? 'fas fa-video' : 'fas fa-eye'}></i>
                                 <span>{movie.watched || currentTab === Constants.TAB_UPCOMING ? 'Move to watch' : 'Watched'}</span>
                             </button>
 
                             {currentTab == 'watch' &&
-                                <button onClick={toggleFeatured}>
+                                <button onClick={handleFeatureAction}>
                                     <i className="fas fa-star"></i>
                                     {movie.featured ? 'Unfeature' : 'Feature'}
                                 </button>
@@ -62,11 +90,11 @@ const Settings = ({ movie, currentTab, handleMovieUpdate }) => {
 
                             {currentTab !== 'amc' &&
                                 <>
-                                    <button>
+                                    <button onClick={handleRefreshAction}>
                                         <i className="fas fa-sync-alt"></i>
                                         <span>Refresh Info</span>
                                     </button>
-                                    <button>
+                                    <button onClick={handleDeleteAction}>
                                         <i className="fas fa-trash"></i>
                                         <span>Delete</span>
                                     </button>

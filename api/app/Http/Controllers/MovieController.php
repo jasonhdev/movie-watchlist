@@ -143,9 +143,7 @@ class MovieController extends Controller
         if (Movie::where('id', $id)->exists()) {
             $movie = Movie::find($id);
 
-            $action = $request->get('action');
-
-            switch ($action) {
+            switch ($action = $request->get('action')) {
                 case self::ACTION_WATCH:
                     $movie->watched = $request->watched;
                     $movie->watched_date = $currentDate;
@@ -156,6 +154,8 @@ class MovieController extends Controller
                     break;
 
                 case self::ACTION_REFRESH:
+                    $request->merge(['searchTerm' => $movie->search_term]);
+
                     if ($searchResponse = $this->searchMovie($request)) {
 
                         $movieData = json_decode(json_decode($searchResponse->getContent(), true)['movieData'], true);
@@ -199,7 +199,9 @@ class MovieController extends Controller
             $movie->delete();
 
             return response()->json([
-                'message' => 'Movie deleted.'
+                'message' => 'Movie deleted.',
+                'action' => self::ACTION_DELETE,
+                'movie' => $movie,
             ]);
         } else {
             return response()->json([

@@ -46,7 +46,7 @@ function App() {
     }));
   }
 
-  const handleMovieUpdate = async (data) => {
+  const updateMovieCard = async (data) => {
     const index = movies.findIndex(movie => movie.id === data.movie.id);
 
     if (data.action === Constants.ACTION_WATCH) {
@@ -68,6 +68,21 @@ function App() {
     } else if (data.action === Constants.ACTION_FEATURE) {
       const watch = await fetchMovieList(currentTab);
       setMovies(watch);
+
+    } else if (data.action === Constants.ACTION_DELETE) {
+      const moviesRef = [...movies];
+
+      moviesRef.splice(index, 1);
+      moviesCache[currentTab] = moviesRef;
+
+      setMovies(moviesRef);
+
+    } else if (data.action === Constants.ACTION_REFRESH) {
+
+      const moviesRef = [...movies];
+      moviesRef[index] = data.movie
+
+      setMovies(moviesRef);
     }
   }
 
@@ -83,7 +98,7 @@ function App() {
       </header> */}
 
       <Header handleTabChange={handleTabChange} handleSearchInput={handleSearchInput} currentTab={currentTab} searchInputRef={searchInputRef}></Header>
-      <Movies movies={movies} currentTab={currentTab} handleMovieUpdate={handleMovieUpdate}></Movies>
+      <Movies movies={movies} currentTab={currentTab} updateMovieCard={updateMovieCard}></Movies>
     </div>
   );
 }
