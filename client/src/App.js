@@ -38,8 +38,30 @@ function App() {
     setMovies(moviesCache[tab]);
   }
 
-  const handleSearchInput = (e) => {
+  const handleSearchInput = async (e) => {
     let search = e.target.value;
+
+    if (e.code === "Enter" && search) {
+      searchInputRef.current.value = "";
+
+      setMovies(moviesCache[currentTab]);
+
+      await fetch('http://localhost/WatchlistConversions/watchlistV2/api/public/api/movie/create?searchTerm=' + search, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+      }).then((res) => res.json())
+        .then((json) => {
+          const moviesRef = [...moviesCache[currentTab]];
+          const movie = json.movie;
+
+          moviesRef.unshift(movie);
+
+          moviesCache[currentTab] = moviesRef;
+          setMovies(moviesRef);
+        });
+
+      return;
+    }
 
     setMovies(moviesCache[currentTab].filter((movie) => {
       return search.toLowerCase().split(' ').every(v => movie.title.toLowerCase().includes(v))
@@ -81,6 +103,8 @@ function App() {
 
       const moviesRef = [...movies];
       moviesRef[index] = data.movie
+
+      moviesCache[currentTab] = moviesRef;
 
       setMovies(moviesRef);
     }

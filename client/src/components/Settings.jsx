@@ -6,9 +6,7 @@ const Settings = ({ movie, currentTab, updateMovieCard }) => {
     const UPDATE_URL = `http://localhost/WatchlistConversions/watchlistV2/api/public/api/movie/update/${movie.id}`;
     const updateRequestOptions = {
         method: "PUT",
-        headers: {
-            "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
     }
 
     const toggleShowSettings = () => {
@@ -57,13 +55,13 @@ const Settings = ({ movie, currentTab, updateMovieCard }) => {
         })
 
         setShowSettings(false);
-        
+
         await fetch(`http://localhost/WatchlistConversions/watchlistV2/api/public/api/movie/update/${movie.id}`, updateRequestOptions)
             .then((res) => res.json())
             .then((json) => {
                 updateMovieCard(json);
             });
-    }   
+    }
 
     const [showSettings, setShowSettings] = useState(false);
 
