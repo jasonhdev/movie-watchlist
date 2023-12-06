@@ -3,7 +3,56 @@ import './Settings';
 import Settings from './Settings';
 import Constants from "../Constants";
 
-const MovieCard = ({ movie, currentTab, updateMovieCard }) => {
+const MovieCard = ({ movie, currentTab, isLoading, updateMovieCard }) => {
+
+    const getInfoSection = () => {
+        if (isLoading) {
+            return <div class="loadingRing"><span></span></div>
+        }
+
+        return <>
+            <p className="metaDataRow">
+                {movie.rating && <span className="rating">{movie.rating}</span>}
+                {movie.year && <span>{movie.year}</span>}
+                {movie.runtime && <span>{movie.runtime}</span>}
+            </p>
+
+            <p>
+                <i>{movie.genre}</i>
+            </p>
+
+            {
+                (currentTab === Constants.TAB_WATCH && movie.services) ? <p>Watch on: {movie.services}</p>
+                    : (currentTab === Constants.TAB_UPCOMING) ? <p>Release Date: {movie.release_date ?? "TBD"}</p>
+                        : (currentTab === Constants.TAB_HISTORY) ? <p>Watched on: {movie.watched_date}</p>
+                            : ""
+            }
+
+            {
+                (movie.tomato || movie.imdb) &&
+                <div className="scoresRow">
+                    <span className="tomatoCol">
+                        {movie.tomato &&
+                            <>
+                                <img src="tomato.png" alt="Logo for Rotten Tomato"></img>
+                                <span className="score">{movie.tomato}</span>
+                            </>
+                        }
+                    </span>
+                    {movie.imdb &&
+                        <span className="imdbCol">
+                            <img className="imdbLogo" src="imdb.png" alt="Logo for IMDB"></img>
+                            <span className="score">{movie.imdb}</span>
+                        </span>
+                    }
+                </div>
+            }
+
+            {/* TODO: Expand/hide desc */}
+            <p className="description">{movie.description}</p>
+        </>
+    }
+
     return (
         <div movieid={movie.id} className="movieCard">
             <div className="posterContainer">
@@ -19,44 +68,8 @@ const MovieCard = ({ movie, currentTab, updateMovieCard }) => {
                     <Settings movie={movie} currentTab={currentTab} updateMovieCard={updateMovieCard}></Settings>
                 </div>
 
-                <p className="metaDataRow">
-                    {movie.rating && <span className="rating">{movie.rating}</span>}
-                    {movie.year && <span>{movie.year}</span>}
-                    {movie.runtime && <span>{movie.runtime}</span>}
-                </p>
+                {getInfoSection()}
 
-                <p>
-                    <i>{movie.genre}</i>
-                </p>
-
-                {
-                    (currentTab === Constants.TAB_WATCH && movie.services) ? <p>Watch on: {movie.services}</p>
-                        : (currentTab === Constants.TAB_UPCOMING) ? <p>Release Date: {movie.release_date ?? "TBD"}</p>
-                            : (currentTab === Constants.TAB_HISTORY) ? <p>Watched on: {movie.watched_date}</p>
-                                : ""
-                }
-
-                {(movie.tomato || movie.imdb) &&
-                    <div className="scoresRow">
-                        <span className="tomatoCol">
-                            {movie.tomato &&
-                                <>
-                                    <img src="tomato.png" alt="Logo for Rotten Tomato"></img>
-                                    <span className="score">{movie.tomato}</span>
-                                </>
-                            }
-                        </span>
-                        {movie.imdb &&
-                            <span className="imdbCol">
-                                <img className="imdbLogo" src="imdb.png" alt="Logo for IMDB"></img>
-                                <span className="score">{movie.imdb}</span>
-                            </span>
-                        }
-                    </div>
-                }
-
-                {/* TODO: Expand/hide desc */}
-                <p className="description">{movie.description}</p>
             </div>
         </div>
     );

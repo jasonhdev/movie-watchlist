@@ -36,6 +36,7 @@ const Movies = ({ movies, currentTab, updateMovieCard }) => {
                                 key={i}
                                 movie={movie}
                                 currentTab={currentTab}
+                                isLoading={movie.isLoading ?? false}
                                 updateMovieCard={updateMovieCard}
                             />
                         );

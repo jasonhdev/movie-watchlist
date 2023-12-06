@@ -44,6 +44,11 @@ function App() {
     if (e.code === "Enter" && search) {
       searchInputRef.current.value = "";
 
+      moviesCache[currentTab].unshift({
+        'title': search,
+        'isLoading': true,
+      });
+
       setMovies(moviesCache[currentTab]);
 
       await fetch('http://localhost/WatchlistConversions/watchlistV2/api/public/api/movie/create?searchTerm=' + search, {
@@ -54,9 +59,11 @@ function App() {
           const moviesRef = [...moviesCache[currentTab]];
           const movie = json.movie;
 
-          moviesRef.unshift(movie);
+          const index = moviesCache[currentTab].findIndex(movie => movie.title === search);
+          moviesRef[index] = movie;
 
           moviesCache[currentTab] = moviesRef;
+
           setMovies(moviesRef);
         });
 

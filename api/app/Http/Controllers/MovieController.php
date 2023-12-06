@@ -66,6 +66,7 @@ class MovieController extends Controller
 
     public function searchMovie(Request $request): JsonResponse
     {
+        // sleep(2);
         // return response()->json([
         //     'success' => true,
         //     'movieData' => "{\"title\": \"Interstellar\", \"description\": \"In Earth's future, a global crop blight and second Dust Bowl are slowly rendering the planet uninhabitable. Professor Brand (Michael Caine), a brilliant NASA physicist, is working on plans to save mankind by transporting Earth's population to a new home via a wormhole. But first, Brand must send former NASA pilot Cooper (Matthew McConaughey) and a team of researchers through the wormhole and across the galaxy to find out which of three planets could be mankind's new home.\\u2026\\u00a0MORE\", \"tomato\": \"73%\", \"imdb\": \"8.7/10\", \"image\": \"//upload.wikimedia.org/wikipedia/en/b/bc/Interstellar_film_poster.jpg\", \"trailer\": \"https://www.youtube.com/attribution_link?utm_campaign=ytcore&yt_product=ytalc&yt_goal=acq&utm_source=int&utm_medium=gs&utm_content=ump&yt_campaign_id=ytalc22&c=ytcore-ytalc-acq-int-gs-ump-ytalc22&utm_term=video&u=https%3A%2F%2Fwww.youtube.com%2Fwatch%3Fv%3DoCjW6gdEDa4\", \"rating\": \"PG-13\", \"year\": \"2014\", \"genre\": \"Sci-fi/Adventure\", \"runtime\": \"2h 49m\", \"services\": \"Mgmplus\", \"torrent\": \"https://yts.mx/movies/interstellar-2014\", \"releaseDate\": \"October 26, 2014\", \"watched\": 0}\r\n",
