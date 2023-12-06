@@ -16,7 +16,8 @@ const Settings = ({ movie, currentTab, updateMovieCard }) => {
     const handleWatchAction = async () => {
         updateRequestOptions.body = JSON.stringify({
             'action': Constants.ACTION_WATCH,
-            'watched': !movie.watched
+            'watched': currentTab === Constants.TAB_WATCH,
+            'released': currentTab !== Constants.TAB_UPCOMING,
         })
 
         await fetch(UPDATE_URL, updateRequestOptions)

@@ -51,9 +51,13 @@ function App() {
 
       setMovies(moviesCache[currentTab]);
 
-      await fetch('http://localhost/WatchlistConversions/watchlistV2/api/public/api/movie/create?searchTerm=' + search, {
+      await fetch('http://localhost/WatchlistConversions/watchlistV2/api/public/api/movie/create', {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          "list": currentTab,
+          "searchTerm": search
+        }),
       }).then((res) => res.json())
         .then((json) => {
           const moviesRef = [...moviesCache[currentTab]];

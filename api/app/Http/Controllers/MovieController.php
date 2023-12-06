@@ -50,7 +50,7 @@ class MovieController extends Controller
                     ->where('released', '=', 1)
                     ->orderBy('featured', 'desc')
                     ->orderBy('amc', 'desc')
-                    ->orderBy('add_date', 'desc')
+                    ->orderBy('created_at', 'desc')
                     ->get();
                 break;
             case self::LIST_AMC:
@@ -148,6 +148,7 @@ class MovieController extends Controller
                 case self::ACTION_WATCH:
                     $movie->watched = $request->watched;
                     $movie->watched_date = $currentDate;
+                    $movie->released = $request->released;
                     break;
 
                 case self::ACTION_FEATURE:

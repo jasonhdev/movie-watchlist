@@ -7,7 +7,7 @@ const MovieCard = ({ movie, currentTab, isLoading, updateMovieCard }) => {
 
     const getInfoSection = () => {
         if (isLoading) {
-            return <div class="loadingRing"><span></span></div>
+            return <div className="loadingRing"><span></span></div>
         }
 
         return <>
