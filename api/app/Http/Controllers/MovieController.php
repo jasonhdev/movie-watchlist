@@ -99,23 +99,24 @@ class MovieController extends Controller
 
             $movieData = json_decode(json_decode($searchResponse->getContent(), true)['movieData'], true);
 
-            $movie->title = $movieData['title'];
-            $movie->description = $movieData['description'];
-            $movie->tomato = $movieData['tomato'];
-            $movie->imdb = $movieData['imdb'];
-            $movie->poster_url = $movieData['image'];
-            $movie->trailer_url = $movieData['trailer'];
-            $movie->rating = $movieData['rating'];
-            $movie->year = $movieData['year'];
-            $movie->genre = $movieData['genre'];
-            $movie->runtime = $movieData['runtime'];
-            $movie->services = $movieData['services'];
+            $movie->title = $movieData['title'] ?? $request->searchTerm;
+            $movie->description = $movieData['description'] ?? null;
+            $movie->tomato = $movieData['tomato'] ?? null;
+            $movie->imdb = $movieData['imdb'] ?? null;
+            $movie->poster_url = $movieData['image'] ?? null;
+            $movie->trailer_url = $movieData['trailer'] ?? null;
+            $movie->rating = $movieData['rating'] ?? null;
+            $movie->year = $movieData['year'] ?? null;
+            $movie->genre = $movieData['genre'] ?? null;
+            $movie->runtime = $movieData['runtime'] ?? null;
+            $movie->services = $movieData['services'] ?? null;
+            $movie->release_date = $movieData['releaseDate'] ?? null;
+
             $movie->search_term = $request->searchTerm;
             // $movie->amc = 0;
 
             if ($list === self::LIST_UPCOMING) {
                 $movie->released = false;
-                $movie->release_date = $movieData['releaseDate'];
             }
 
             if ($list === self::LIST_HISTORY) {
@@ -162,17 +163,18 @@ class MovieController extends Controller
 
                         $movieData = json_decode(json_decode($searchResponse->getContent(), true)['movieData'], true);
 
-                        $movie->title = $movieData['title'];
-                        $movie->description = $movieData['description'];
-                        $movie->tomato = $movieData['tomato'];
-                        $movie->imdb = $movieData['imdb'];
-                        $movie->poster_url = $movieData['image'];
-                        $movie->trailer_url = $movieData['trailer'];
-                        $movie->rating = $movieData['rating'];
-                        $movie->year = $movieData['year'];
-                        $movie->genre = $movieData['genre'];
-                        $movie->runtime = $movieData['runtime'];
-                        $movie->services = $movieData['services'];
+                        $movie->title = $movieData['title'] ?? $request->searchTerm;
+                        $movie->description = $movieData['description'] ?? null;
+                        $movie->tomato = $movieData['tomato'] ?? null;
+                        $movie->imdb = $movieData['imdb'] ?? null;
+                        $movie->poster_url = $movieData['image'] ?? null;
+                        $movie->trailer_url = $movieData['trailer'] ?? null;
+                        $movie->rating = $movieData['rating'] ?? null;
+                        $movie->year = $movieData['year'] ?? null;
+                        $movie->genre = $movieData['genre'] ?? null;
+                        $movie->runtime = $movieData['runtime'] ?? null;
+                        $movie->services = $movieData['services'] ?? null;
+                        $movie->release_date = $movieData['releaseDate'] ?? null;
                     }
                     break;
 
@@ -194,7 +196,7 @@ class MovieController extends Controller
         }
     }
 
-    public function deleteMovie(int $id)
+    public function deleteMovie(int $id): JsonResponse
     {
         if (Movie::where('id', $id)->exists()) {
             $movie = Movie::find($id);

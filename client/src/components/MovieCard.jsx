@@ -13,7 +13,7 @@ const MovieCard = ({ movie, currentTab, isLoading, updateMovieCard }) => {
         return <>
             <p className="metaDataRow">
                 {movie.rating && <span className="rating">{movie.rating}</span>}
-                {movie.year && <span>{movie.year}</span>}
+                {(currentTab !== Constants.TAB_UPCOMING && movie.year) && <span>{movie.year}</span>}
                 {movie.runtime && <span>{movie.runtime}</span>}
             </p>
 
