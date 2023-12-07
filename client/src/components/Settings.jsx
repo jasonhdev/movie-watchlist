@@ -1,9 +1,9 @@
-import { useState, useEffect, useRef } from "react";
+import { useState } from "react";
 import Constants from "../Constants"
 
 const Settings = ({ movie, currentTab, updateMovieCard }) => {
 
-    const UPDATE_URL = `http://localhost/WatchlistConversions/watchlistV2/api/public/api/movie/update/${movie.id}`;
+    const UPDATE_URL = process.env.REACT_APP_API_URL + '/movie/update/' + movie.id;
     const updateRequestOptions = {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
@@ -61,7 +61,7 @@ const Settings = ({ movie, currentTab, updateMovieCard }) => {
         });
 
         updateRequestOptions.method = "DELETE";
-        fetch(`http://localhost/WatchlistConversions/watchlistV2/api/public/api/movie/delete/${movie.id}`, updateRequestOptions);
+        fetch(process.env.REACT_APP_API_URL + "/movie/delete/" + movie.id, updateRequestOptions);
     }
 
     const handleRefreshAction = async () => {
@@ -75,11 +75,11 @@ const Settings = ({ movie, currentTab, updateMovieCard }) => {
 
         movie.isLoading = true;
         data.movie = movie;
-        
+
         setShowSettings(false);
         updateMovieCard(data);
 
-        await fetch(`http://localhost/WatchlistConversions/watchlistV2/api/public/api/movie/update/${movie.id}`, updateRequestOptions)
+        await fetch(UPDATE_URL, updateRequestOptions)
             .then((res) => res.json())
             .then((json) => {
                 updateMovieCard(json);
@@ -102,7 +102,7 @@ const Settings = ({ movie, currentTab, updateMovieCard }) => {
                                 <span>{movie.watched || currentTab === Constants.TAB_UPCOMING ? 'Move to watch' : 'Watched'}</span>
                             </button>
 
-                            {currentTab == 'watch' &&
+                            {currentTab === 'watch' &&
                                 <button onClick={handleFeatureAction}>
                                     <i className="fas fa-star"></i>
                                     {movie.featured ? 'Unfeature' : 'Feature'}

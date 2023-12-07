@@ -51,7 +51,7 @@ function App() {
 
       setMovies(moviesCache[currentTab]);
 
-      await fetch('http://localhost/WatchlistConversions/watchlistV2/api/public/api/movie/create', {
+      await fetch(process.env.WATCHLIST_API_URL + '/create', {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
