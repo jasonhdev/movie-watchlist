@@ -114,6 +114,18 @@ function App() {
 
     } else if (data.action === Constants.ACTION_REFRESH) {
 
+      if (data.movie.isLoading) {
+        const moviesRef = [...moviesCache[currentTab]];
+
+        moviesRef[index] = data.movie;
+
+        moviesCache[currentTab] = moviesRef;
+
+        setMovies(moviesRef);
+
+        return;
+      }
+
       const moviesRef = [...movies];
       moviesRef[index] = data.movie
 

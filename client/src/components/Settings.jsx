@@ -65,12 +65,19 @@ const Settings = ({ movie, currentTab, updateMovieCard }) => {
     }
 
     const handleRefreshAction = async () => {
-        updateRequestOptions.body = JSON.stringify({
+
+        const data = {
             'action': Constants.ACTION_REFRESH,
             'searchTerm': movie.searchTerm,
-        })
+        };
 
+        updateRequestOptions.body = JSON.stringify(data);
+
+        movie.isLoading = true;
+        data.movie = movie;
+        
         setShowSettings(false);
+        updateMovieCard(data);
 
         await fetch(`http://localhost/WatchlistConversions/watchlistV2/api/public/api/movie/update/${movie.id}`, updateRequestOptions)
             .then((res) => res.json())
