@@ -87,7 +87,7 @@ function App() {
 
       moviesRef[index] = data.movie;
 
-      if (!data.movie.watched && currentTab !== Constants.TAB_UPCOMING) {
+      if (!data.movie.watched) {
         moviesCache[Constants.TAB_WATCH].unshift(moviesRef[index]);
       } else {
         moviesCache[Constants.TAB_HISTORY].unshift(moviesRef[index]);

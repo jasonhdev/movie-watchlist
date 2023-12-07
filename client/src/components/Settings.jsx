@@ -16,7 +16,10 @@ const Settings = ({ movie, currentTab, updateMovieCard }) => {
     const handleWatchAction = () => {
 
         movie.watched = currentTab === Constants.TAB_WATCH;
-        movie.released = currentTab !== Constants.TAB_UPCOMING;
+
+        if (currentTab === Constants.TAB_UPCOMING) {
+            movie.released = true;
+        }
 
         const data = {
             'action': Constants.ACTION_WATCH,
