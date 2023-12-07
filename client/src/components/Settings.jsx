@@ -13,40 +13,52 @@ const Settings = ({ movie, currentTab, updateMovieCard }) => {
         setShowSettings(!showSettings);
     }
 
-    const handleWatchAction = async () => {
-        updateRequestOptions.body = JSON.stringify({
+    const handleWatchAction = () => {
+
+        movie.watched = currentTab === Constants.TAB_WATCH;
+        movie.released = currentTab !== Constants.TAB_UPCOMING;
+
+        const data = {
             'action': Constants.ACTION_WATCH,
-            'watched': currentTab === Constants.TAB_WATCH,
-            'released': currentTab !== Constants.TAB_UPCOMING,
-        })
+            'watched': movie.watched,
+            'released': movie.released,
+        }
 
-        await fetch(UPDATE_URL, updateRequestOptions)
-            .then((res) => res.json())
-            .then((json) => updateMovieCard(json));
+        updateRequestOptions.body = JSON.stringify(data)
+        fetch(UPDATE_URL, updateRequestOptions);
+
+        data.movie = movie;
 
         setShowSettings(false);
+        updateMovieCard(data);
     }
 
-    const handleFeatureAction = async () => {
-        updateRequestOptions.body = JSON.stringify({
+    const handleFeatureAction = () => {
+        movie.featured = !movie.featured;
+
+        const data = {
             'action': Constants.ACTION_FEATURE,
-            'featured': !movie.featured
-        })
+            'featured': movie.featured,
+        };
 
-        await fetch(UPDATE_URL, updateRequestOptions)
-            .then((res) => res.json())
-            .then((json) => updateMovieCard(json));
+        updateRequestOptions.body = JSON.stringify(data);
+        fetch(UPDATE_URL, updateRequestOptions);
+
+        data.movie = movie;
 
         setShowSettings(false);
+        updateMovieCard(data);
     }
 
-    const handleDeleteAction = async () => {
-        updateRequestOptions.method = "DELETE";
-        await fetch(`http://localhost/WatchlistConversions/watchlistV2/api/public/api/movie/delete/${movie.id}`, updateRequestOptions)
-            .then((res) => res.json())
-            .then((json) => updateMovieCard(json));
-
+    const handleDeleteAction = () => {
         setShowSettings(false);
+        updateMovieCard({
+            'action': 'delete',
+            'movie': movie,
+        });
+
+        updateRequestOptions.method = "DELETE";
+        fetch(`http://localhost/WatchlistConversions/watchlistV2/api/public/api/movie/delete/${movie.id}`, updateRequestOptions);
     }
 
     const handleRefreshAction = async () => {

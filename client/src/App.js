@@ -99,8 +99,10 @@ function App() {
       setMovies(moviesRef);
 
     } else if (data.action === Constants.ACTION_FEATURE) {
-      const watch = await fetchMovieList(currentTab);
-      setMovies(watch);
+      const moviesRef = [...movies];
+      moviesRef[index] = data.movie;
+
+      setMovies(moviesRef);
 
     } else if (data.action === Constants.ACTION_DELETE) {
       const moviesRef = [...movies];
