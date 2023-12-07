@@ -10,17 +10,22 @@
     align-items: center;
     justify-content: center;
 
+    .fallbackPoster {
+        display: block;
+        height: 100%;
+        background-color: #ff8561;
+        border-radius: 10px;
+
+        img {
+            margin-top: 25px;
+        }
+    }
+
     img {
         max-height: 200px;
         max-width: 135px;
         vertical-align: middle;
         border-radius: 10px;
-
-        &.fallbackPoster {
-            height: 100%;
-            width: 100%;
-            vertical-align: middle;
-        }
     }
 }
 

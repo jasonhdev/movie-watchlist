@@ -58,7 +58,9 @@ const MovieCard = ({ movie, currentTab, isLoading, updateMovieCard }) => {
             <div className="posterContainer">
                 {(movie.featured > 0 && currentTab === Constants.TAB_WATCH) && <i className="fas fa-star featuredStar"></i>}
                 <a href={movie.trailer_url} target="_blank" rel="noreferrer">
-                    <img className={movie.poster_url ? "fallbackPoster" : ""} src={movie.poster_url ? 'https://' + movie.poster_url : "default.png"} alt={'Movie poster for ' + movie.search}></img>
+                    <span className={movie.poster_url ? "" : "fallbackPoster"}>
+                        <img src={movie.poster_url ? 'https://' + movie.poster_url : "default.png"} alt={'Movie poster for ' + movie.search}></img>
+                    </span>
                 </a>
             </div>
 
