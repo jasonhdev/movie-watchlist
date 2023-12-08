@@ -51,7 +51,7 @@ function App() {
 
       setMovies(moviesCache[currentTab]);
 
-      await fetch(process.env.WATCHLIST_API_URL + '/create', {
+      await fetch(process.env.REACT_APP_API_URL + '/movie/create', {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
