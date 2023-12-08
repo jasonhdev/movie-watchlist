@@ -11,19 +11,35 @@ use Symfony\Component\Process\Exception\ProcessFailedException;
 
 class AmcDataController extends Controller
 {
+    const IGNORED_WORDS = [
+        '$99 Private Theatre Rental',
+    ];
+
     public function index()
     {
     }
 
     public function fetchAmcData()
     {
-        // SELECT title FROM watchlist WHERE watched = 0 AND released = 1
-        // UNION
-        // (SELECT title FROM watchlist WHERE watched = 1 ORDER BY watched_date DESC LIMIT 6)
-        // UNION
-        // (SELECT search FROM amc_data)"
+        // Purge table to always have fresh data
+        AmcData::query()->delete();
 
-        $excludeTitles = [];
+        $watchlistQuery = Movie::select('title')
+            ->where('watched', '=', 0)
+            ->where('released', '=', 1);
+
+        $historyQuery = Movie::select('title')
+            ->where('watched', '=', 1)
+            ->orderBy('watched_date', 'desc')
+            ->limit(6);
+
+        // Skip fetch on already added movies and any bad amc API data
+        $excludeTitles = $watchlistQuery->union($historyQuery)
+            ->get()
+            ->pluck('title')
+            ->toArray();
+
+        $excludeTitles = array_merge($excludeTitles, self::IGNORED_WORDS);
 
         $response = Http::withHeaders([
             "X-AMC-Vendor-Key" => env("AMC_KEY")
@@ -38,7 +54,7 @@ class AmcDataController extends Controller
 
             $title = trim($amcData['name']);
             //TODO: Need better title comparison
-            if ($title == '$99 Private Theatre Rental' || in_array($title, $excludeTitles)) {
+            if (in_array($title, $excludeTitles)) {
                 continue;
             }
 
@@ -70,8 +86,6 @@ class AmcDataController extends Controller
             // 'amc' => 1,
 
             $movie->save();
-
-            exit();
         }
     }
 
@@ -85,6 +99,6 @@ class AmcDataController extends Controller
             throw new ProcessFailedException($process);
         }
 
-        return $process->getOutput();
+        return json_decode($process->getOutput(), true);
     }
 }
