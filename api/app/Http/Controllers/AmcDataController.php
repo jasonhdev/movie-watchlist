@@ -2,13 +2,14 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\AmcData;
 use App\Models\Movie;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use Symfony\Component\Process\Process;
 use Symfony\Component\Process\Exception\ProcessFailedException;
 
-class AmcController extends Controller
+class AmcDataController extends Controller
 {
     public function index()
     {
@@ -33,19 +34,19 @@ class AmcController extends Controller
         $amcDataArray = $response->json()['_embedded']['movies'];
 
         $amcMovies = [];
-        foreach ($amcDataArray as $amcMovie) {
+        foreach ($amcDataArray as $amcData) {
 
-            $movieTitle = trim($amcMovie['name']);
+            $title = trim($amcData['name']);
             //TODO: Need better title comparison
-            if ($movieTitle == '$99 Private Theatre Rental' || in_array($movieTitle, $excludeTitles)) {
+            if ($title == '$99 Private Theatre Rental' || in_array($title, $excludeTitles)) {
                 continue;
             }
 
-            $amcMovies[] = $movieTitle;
+            $amcMovies[] = $title;
         }
 
         foreach ($amcMovies as $amcTitle) {
-            $movie = new Movie();
+            $movie = new AmcData();
 
             $movieData = $this->searchMovie($amcTitle);
 
@@ -69,6 +70,8 @@ class AmcController extends Controller
             // 'amc' => 1,
 
             $movie->save();
+
+            exit();
         }
     }
 
