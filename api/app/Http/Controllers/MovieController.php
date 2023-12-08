@@ -13,7 +13,6 @@ class MovieController extends Controller
     const LIST_WATCH = "watch";
     const LIST_UPCOMING = "upcoming";
     const LIST_HISTORY = "history";
-    const LIST_AMC = "amc";
 
     const ACTION_WATCH = "watch";
     const ACTION_FEATURE = "feature";
@@ -52,9 +51,7 @@ class MovieController extends Controller
                     ->orderBy('amc', 'desc')
                     ->orderBy('created_at', 'desc')
                     ->get();
-                break;
-            case self::LIST_AMC:
-                // TODO: case "amc":
+
                 break;
             default:
                 $movies = Movie::all();

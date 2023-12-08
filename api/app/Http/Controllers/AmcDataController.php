@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use Symfony\Component\Process\Process;
 use Symfony\Component\Process\Exception\ProcessFailedException;
+use Illuminate\Http\JsonResponse;
 
 class AmcDataController extends Controller
 {
@@ -15,8 +16,32 @@ class AmcDataController extends Controller
         '$99 Private Theatre Rental',
     ];
 
-    public function index()
+    public function index(): JsonResponse
     {
+        $movies = AmcData::select('*')
+            ->orderBy('tomato', 'desc')
+            ->orderBy('imdb', 'desc')
+            ->get()
+            ->toArray();
+
+        // Scoring system: Rotten tomato gets 1.5 multiplier
+        foreach ($movies as $key => &$movie) {
+            $tomato = (float) str_replace("%", "", $movie['tomato']);
+            $tomato *= 1.5;
+
+            $imdb = strstr($movie['imdb'], "/", true) ?: 0;
+            $imdb = (float) str_replace(".", "", $imdb);
+
+            $diviser = (($tomato > 0) + ($imdb > 0)) ?: -1;
+
+            $movie['score'] = ($tomato + $imdb) / $diviser;
+        }
+
+        usort($movies, function ($a, $b) {
+            return $b['score'] <=> $a['score'];
+        });
+
+        return response()->json($movies);
     }
 
     public function fetchAmcData()
