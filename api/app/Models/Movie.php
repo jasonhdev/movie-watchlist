@@ -15,8 +15,8 @@ class Movie extends Model
         'description',
         'tomato',
         'imdb',
-        'poster_url', // originally 'image'
-        'trailer_url', // originally 'trailer'
+        'poster_url',
+        'trailer_url',
         'rating',
         'year',
         'genre',
@@ -26,10 +26,9 @@ class Movie extends Model
         'released',
         'featured',
         'amc',
-        // downloaded,
         'add_date',
         'watched_date',
         'release_date',
-        'search_term', // originally 'search'
+        'search_term',
     ];
 }

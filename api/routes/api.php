@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AmcController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\MovieController;
@@ -27,5 +28,5 @@ Route::post('/movie/create', [MovieController::class, 'createMovie']);
 Route::put('/movie/update/{id}', [MovieController::class, 'updateMovie']);
 Route::delete('/movie/delete/{id}', [MovieController::class, 'deleteMovie']);
 
-// Route::get('/movie/create', [MovieController::class, 'createMovie']);
-// Route::get('/movie/update/{id}', [MovieController::class, 'updateMovie']);
+Route::get('/amc', [AmcController::class, 'index']);
+Route::get('/amc/fetchData', [AmcController::class, 'fetchAmcData']);

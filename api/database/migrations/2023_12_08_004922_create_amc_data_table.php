@@ -25,6 +25,7 @@ class CreateAmcDataTable extends Migration
             $table->string('year')->nullable();
             $table->string('genre')->nullable();
             $table->string('runtime')->nullable();
+            $table->string('release_date')->nullable();
             $table->string('amc_title');
             $table->timestamps();
         });
