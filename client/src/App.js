@@ -143,10 +143,12 @@ function App() {
   return (
     isLoaded === true &&
     <div className="container">
-      {/* <header className="App-header">
-      </header> */}
-
       <Header handleTabChange={handleTabChange} handleSearchInput={handleSearchInput} currentTab={currentTab} searchInputRef={searchInputRef}></Header>
+
+      <div class="amcBtnContainer">
+        <button class="amcBtn" onClick={() => { alert("X") }}>Showings at AMC</button>
+      </div>
+
       <Movies movies={movies} currentTab={currentTab} updateMovieCard={updateMovieCard}></Movies>
     </div>
   );
