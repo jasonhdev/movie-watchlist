@@ -44,7 +44,7 @@ class AmcDataController extends Controller
         return response()->json($movies);
     }
 
-    public function fetchAmcData()
+    public function fetchAmcData(): void
     {
         // Purge table to always have fresh data
         AmcData::query()->delete();
@@ -104,17 +104,33 @@ class AmcDataController extends Controller
             $movie->release_date = $movieData['releaseDate'] ?? null;
             $movie->amc_title = $amcTitle;
 
-            // 'services' => '',
-            // 'releaseDate' => $movie['releaseDate'] ?? '',
-            // 'released' => 1,
-            // 'add_date' => date("Y-m-d H:i:s"),
-            // 'amc' => 1,
-
             $movie->save();
         }
     }
 
-    private function searchMovie(string $searchTerm)
+    public function createMovieFromData(int $id): JsonResponse
+    {
+        $movie = new Movie();
+
+        if (AmcData::where('id', $id)->exists()) {
+            $amcData = AmcData::find($id)->toArray();
+
+            $amcData['search_term'] = $amcData['amc_title'];
+            $amcData['released'] = 1;
+            $amcData['amc'] = 1;
+            unset($amcData['amc_title']);
+
+            $movie->fill($amcData);
+            $movie->save();
+
+            return response()->json([
+                'message' => 'AMC movie added.',
+                'movie' => $movie,
+            ]);
+        }
+    }
+
+    private function searchMovie(string $searchTerm): array
     {
         $pythonPath = resource_path() . "/python/";
         $process = new Process([$pythonPath . ".env/Scripts/python.exe", $pythonPath . 'movieScraper.py', $searchTerm]);

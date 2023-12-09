@@ -29,4 +29,5 @@ Route::put('/movie/update/{id}', [MovieController::class, 'updateMovie']);
 Route::delete('/movie/delete/{id}', [MovieController::class, 'deleteMovie']);
 
 Route::get('/amc', [AmcDataController::class, 'index']);
+Route::get('/amc/create/{id}', [AmcDataController::class, 'createMovieFromData']);
 Route::get('/amc/fetchData', [AmcDataController::class, 'fetchAmcData']);
