@@ -1,5 +1,5 @@
 import MovieCard from "./MovieCard"
-import InfiniteScroll from 'react-infinite-scroller';
+import InfiniteScroll from 'react-infinite-scroll-component';
 import { useState, useEffect } from "react";
 
 const Movies = ({ movies, currentTab, updateMovieCard }) => {

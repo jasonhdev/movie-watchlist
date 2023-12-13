@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\AmcData;
 use Illuminate\Http\Request;
 use App\Models\Movie;
 use Illuminate\Http\JsonResponse;
@@ -13,6 +14,7 @@ class MovieController extends Controller
     const LIST_WATCH = "watch";
     const LIST_UPCOMING = "upcoming";
     const LIST_HISTORY = "history";
+    const LIST_AMC = "amc";
 
     const ACTION_WATCH = "watch";
     const ACTION_FEATURE = "feature";
@@ -41,7 +43,10 @@ class MovieController extends Controller
                 foreach ($movies as $key => $movie) {
                     $movies[$key]['watched_date'] = date("M j, Y", strtotime($movie['watched_date']));
                 }
-
+                break;
+            case self::LIST_AMC:
+                $movies = AmcData::select('*')
+                    ->get();
                 break;
             case self::LIST_WATCH:
                 $movies = Movie::select('*')

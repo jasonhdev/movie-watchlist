@@ -2,6 +2,7 @@ const Constants = {
     TAB_WATCH: "watch",
     TAB_UPCOMING: "upcoming",
     TAB_HISTORY: "history",
+    TAB_AMC: "amc",
 
     ACTION_WATCH: "watch",
     ACTION_FEATURE: "feature",

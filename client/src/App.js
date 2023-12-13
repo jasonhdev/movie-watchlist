@@ -2,15 +2,18 @@ import './App.css';
 import Movies from "./components/Movies"
 import Header from "./components/Header/Header"
 import Constants from "./Constants"
-
+import 'react-responsive-modal/styles.css';
+import { Modal } from 'react-responsive-modal';
 import { useState, useEffect, useRef } from "react";
 
 function App() {
   const [currentTab, setCurrentTab] = useState(Constants.TAB_WATCH);
   const [movies, setMovies] = useState([]);
   const [moviesCache, setMoviesCache] = useState([]);
-  const searchInputRef = useRef();
+  const [amcMovies, setAmcMovies] = useState([]);
   const [isLoaded, setIsLoaded] = useState(false);
+  const [displayAmcModal, setDisplayAmcModal] = useState(false);
+  const searchInputRef = useRef();
 
   // On page load
   useEffect(() => {
@@ -23,6 +26,9 @@ function App() {
         [Constants.TAB_UPCOMING]: await fetchMovieList(Constants.TAB_UPCOMING),
         [Constants.TAB_HISTORY]: await fetchMovieList(Constants.TAB_HISTORY),
       });
+
+      const amcMovies = await fetchMovieList(Constants.TAB_AMC);
+      setAmcMovies(amcMovies);
 
       setIsLoaded(true);
     }
@@ -140,16 +146,28 @@ function App() {
     return await response.json();
   }
 
+  const openAmcModal = () => {
+    setDisplayAmcModal(true);
+  }
+  const closeAmcModal = () => {
+    setDisplayAmcModal(false);
+  }
+
   return (
     isLoaded === true &&
     <div className="container">
       <Header handleTabChange={handleTabChange} handleSearchInput={handleSearchInput} currentTab={currentTab} searchInputRef={searchInputRef}></Header>
 
       <div class="amcBtnContainer">
-        <button class="amcBtn" onClick={() => { alert("X") }}>Showings at AMC</button>
+        <button class="amcBtn" onClick={openAmcModal}>Showings at AMC</button>
       </div>
 
       <Movies movies={movies} currentTab={currentTab} updateMovieCard={updateMovieCard}></Movies>
+
+      <Modal open={displayAmcModal} onClose={closeAmcModal} center>
+        <h2>Now Showing at AMC</h2>
+        <Movies movies={amcMovies} currentTab={Constants.TAB_AMC}/>
+      </Modal>
     </div>
   );
 }
