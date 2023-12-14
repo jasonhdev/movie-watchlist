@@ -1,6 +1,7 @@
 import MovieCard from "./MovieCard"
 import InfiniteScroll from 'react-infinite-scroll-component';
 import { useState, useEffect } from "react";
+import Constants from "../Constants";
 
 const Movies = ({ movies, currentTab, updateMovieCard }) => {
 
@@ -9,9 +10,10 @@ const Movies = ({ movies, currentTab, updateMovieCard }) => {
     const [displayCount, setDisplayCount] = useState(DISPLAY_INCREMENT_COUNT);
     const [hasMore, setHasMore] = useState(true);
 
-    useEffect(() => {
+    useEffect((currentTab) => {
         setHasMore(true);
-        setDisplayCount(DISPLAY_INCREMENT_COUNT);
+        // Fix for infinite scroll loader not working within Modal
+        setDisplayCount(currentTab === Constants.TAB_AMC ? movies.length : DISPLAY_INCREMENT_COUNT);
     }, [movies]);
 
     const loadMovies = () => {
@@ -24,9 +26,10 @@ const Movies = ({ movies, currentTab, updateMovieCard }) => {
 
     return (
         <div className="movies">
-            {movies !== null &&
+            {movies.length > 0 &&
                 <InfiniteScroll
-                    loadMore={loadMovies}
+                    dataLength={displayCount}
+                    next={loadMovies}
                     hasMore={hasMore}
                     loader={<h4 key={0}>Loading...</h4>}
                 >

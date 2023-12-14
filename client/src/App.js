@@ -158,14 +158,14 @@ function App() {
     <div className="container">
       <Header handleTabChange={handleTabChange} handleSearchInput={handleSearchInput} currentTab={currentTab} searchInputRef={searchInputRef}></Header>
 
-      <div class="amcBtnContainer">
-        <button class="amcBtn" onClick={openAmcModal}>Showings at AMC</button>
+      <div className="amcBtnContainer">
+        <button className="amcBtn" onClick={openAmcModal}>Showings at AMC</button>
       </div>
 
       <Movies movies={movies} currentTab={currentTab} updateMovieCard={updateMovieCard}></Movies>
 
       <Modal open={displayAmcModal} onClose={closeAmcModal} center>
-        <h2>Now Showing at AMC</h2>
+        <h3 className="amcLabel">Now Showing at AMC</h3>
         <Movies movies={amcMovies} currentTab={Constants.TAB_AMC}/>
       </Modal>
     </div>

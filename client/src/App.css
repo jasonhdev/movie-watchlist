@@ -69,3 +69,11 @@ body {
   float: right;
   margin-right: 3px;
 }
+
+.amcLabel {
+  color: #de1c36;
+}
+
+.react-responsive-modal-root {
+  background-color: rgba(black, 0.6);
+}
