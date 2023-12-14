@@ -134,7 +134,7 @@ class AmcDataController extends Controller
     }
 
     // TODO: Could be merged with MovieController's same function
-    private function searchMovie(string $searchTerm): array
+    private function searchMovie(string $searchTerm): ?array
     {
         $pythonPath = resource_path() . "/python/";
         $process = new Process([$pythonPath . ".env/Scripts/python.exe", $pythonPath . 'movieScraper.py', $searchTerm]);

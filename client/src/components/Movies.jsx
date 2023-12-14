@@ -10,11 +10,11 @@ const Movies = ({ movies, currentTab, updateMovieCard }) => {
     const [displayCount, setDisplayCount] = useState(DISPLAY_INCREMENT_COUNT);
     const [hasMore, setHasMore] = useState(true);
 
-    useEffect((currentTab) => {
+    useEffect(() => {
         setHasMore(true);
-        // Fix for infinite scroll loader not working within Modal
+        // Fix for infinite scroll loader not working within Modal, skip lazy load
         setDisplayCount(currentTab === Constants.TAB_AMC ? movies.length : DISPLAY_INCREMENT_COUNT);
-    }, [movies]);
+    }, [movies, currentTab]);
 
     const loadMovies = () => {
         setDisplayCount(displayCount + DISPLAY_INCREMENT_COUNT);
