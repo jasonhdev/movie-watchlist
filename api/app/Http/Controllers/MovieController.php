@@ -95,7 +95,6 @@ class MovieController extends Controller
         $movie = new Movie();
 
         $list = $request->list;
-        $currentDate = date("Y-m-d H:i:s");
 
         if ($searchResponse = $this->searchMovie($request)) {
 
@@ -115,7 +114,6 @@ class MovieController extends Controller
             $movie->release_date = $movieData['releaseDate'] ?? null;
 
             $movie->search_term = $request->searchTerm;
-            // $movie->amc = 0;
 
             if ($list === self::LIST_UPCOMING) {
                 $movie->released = false;
@@ -123,12 +121,7 @@ class MovieController extends Controller
 
             if ($list === self::LIST_HISTORY) {
                 $movie->watched = true;
-                $movie->watched_date = $currentDate;
-            }
-
-            if ($list === self::LIST_WATCH) {
-                $movie->add_date = $currentDate;
-                // TODO: add_date can be replaced with created_at
+                $movie->watched_date = date("Y-m-d H:i:s");
             }
 
             $movie->save();
