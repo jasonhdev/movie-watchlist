@@ -138,6 +138,16 @@ function App() {
       moviesCache[currentTab] = moviesRef;
 
       setMovies(moviesRef);
+    } else if (data.action === Constants.ACTION_AMC) {
+
+      const amcIndex = amcMovies.findIndex(movie => movie.id === data.movie.id);
+
+      const moviesRef = [...amcMovies];
+
+      moviesRef.splice(amcIndex, 1);
+      setAmcMovies(moviesRef);
+
+      moviesCache[Constants.TAB_WATCH].unshift(data.movie);
     }
   }
 
@@ -166,7 +176,7 @@ function App() {
 
       <Modal open={displayAmcModal} onClose={closeAmcModal} center>
         <h3 className="amcLabel">Now Showing at AMC</h3>
-        <Movies movies={amcMovies} currentTab={Constants.TAB_AMC}/>
+        <Movies movies={amcMovies} currentTab={Constants.TAB_AMC} updateMovieCard={updateMovieCard} />
       </Modal>
     </div>
   );

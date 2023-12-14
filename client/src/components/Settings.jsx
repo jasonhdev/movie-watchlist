@@ -86,6 +86,16 @@ const Settings = ({ movie, currentTab, updateMovieCard }) => {
             });
     }
 
+    const handleAmcMoveAction = () => {
+        fetch(process.env.REACT_APP_API_URL + '/amc/create/' + movie.id);
+
+        setShowSettings(false);
+        updateMovieCard({
+            'action': Constants.ACTION_AMC,
+            'movie': movie,
+        });
+    }
+
     const [showSettings, setShowSettings] = useState(false);
 
     return (
@@ -97,9 +107,11 @@ const Settings = ({ movie, currentTab, updateMovieCard }) => {
                 <>
                     <div className="settingsMenu">
                         <div className="actions">
-                            <button onClick={handleWatchAction}>
+                            <button onClick={currentTab === Constants.TAB_AMC ? handleAmcMoveAction : handleWatchAction}>
                                 <i className={movie.watched ? 'fas fa-video' : 'fas fa-eye'}></i>
-                                <span>{movie.watched || currentTab === Constants.TAB_UPCOMING ? 'Move to watch' : 'Watched'}</span>
+                                <span>{movie.watched || [Constants.TAB_UPCOMING, Constants.TAB_AMC].includes(currentTab) ?
+                                    'Move to watch' : 'Watched'}
+                                </span>
                             </button>
 
                             {currentTab === 'watch' &&

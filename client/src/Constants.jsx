@@ -8,6 +8,7 @@ const Constants = {
     ACTION_FEATURE: "feature",
     ACTION_DELETE: "delete",
     ACTION_REFRESH: "refresh",
+    ACTION_AMC: "amc",
 }
 
 export default Constants

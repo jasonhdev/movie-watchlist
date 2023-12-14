@@ -113,15 +113,18 @@ class AmcDataController extends Controller
         $movie = new Movie();
 
         if (AmcData::where('id', $id)->exists()) {
-            $amcData = AmcData::find($id)->toArray();
+            $amcData = AmcData::find($id);
 
-            $amcData['search_term'] = $amcData['amc_title'];
-            $amcData['released'] = 1;
-            $amcData['amc'] = 1;
-            unset($amcData['amc_title']);
+            $amcDataArray = $amcData->toArray();
+            $amcDataArray['search_term'] = $amcDataArray['amc_title'];
+            $amcDataArray['released'] = 1;
+            $amcDataArray['amc'] = 1;
+            unset($amcDataArray['amc_title']);
 
-            $movie->fill($amcData);
+            $movie->fill($amcDataArray);
             $movie->save();
+
+            $amcData->delete();
 
             return response()->json([
                 'message' => 'AMC movie added.',
@@ -130,6 +133,7 @@ class AmcDataController extends Controller
         }
     }
 
+    // TODO: Could be merged with MovieController's same function
     private function searchMovie(string $searchTerm): array
     {
         $pythonPath = resource_path() . "/python/";
