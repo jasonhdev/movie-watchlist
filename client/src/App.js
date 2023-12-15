@@ -174,8 +174,17 @@ function App() {
 
       <Movies movies={movies} currentTab={currentTab} updateMovieCard={updateMovieCard}></Movies>
 
-      <Modal open={displayAmcModal} onClose={closeAmcModal}>
-        <h3 className="amcLabel">Now Showing at AMC</h3>
+      <Modal
+        open={displayAmcModal}
+        onClose={closeAmcModal}
+        center
+        classNames={{
+          overlay: 'amcOverlay',
+          modal: 'amcModal',
+        }}
+        closeIcon={<p className="closeModalBtn">close</p>}
+      >
+        <p className="amcModalLabel">Now Showing at AMC</p>
         <Movies movies={amcMovies} currentTab={Constants.TAB_AMC} updateMovieCard={updateMovieCard} />
       </Modal>
     </div>
