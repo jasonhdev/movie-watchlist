@@ -177,7 +177,6 @@ function App() {
       <Modal
         open={displayAmcModal}
         onClose={closeAmcModal}
-        center
         classNames={{
           overlay: 'amcOverlay',
           modal: 'amcModal',

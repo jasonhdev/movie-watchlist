@@ -37,13 +37,13 @@ body {
 
 .amcOverlay {
     background-color: rgba(black, 0.7) !important;
-    color: green;
 }
 
 .amcModal {
     padding: 0 !important;
-    margin: 0px 12px !important;
+    margin: 10px 6px !important;
     background-color: transparent !important;
+    overflow: hidden !important;
     height: 95%;
 
     @media (max-width: 600px) {
@@ -53,7 +53,9 @@ body {
     }
 
     .movies {
-        margin-top: 30px;
+        margin-top: 35px;
+        overflow: scroll;
+        height: 95%;
     }
 
     .amcModalLabel {
@@ -64,13 +66,14 @@ body {
         background-color: #f50127;
         padding: 0px 10px;
         border-radius: 5px;
+        margin-left: 5px;
     }
 
     .closeModalBtn {
-        // .react-responsive-modal-closeButton >svg {
         color: white;
         font-size: 18px;
-        margin: -10px;
+        margin: -15px;
+        padding: 5px 15px 5px 35px;
     }
 }
 

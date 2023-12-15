@@ -100,7 +100,7 @@ const Settings = ({ movie, currentTab, updateMovieCard }) => {
 
     return (
 
-        <span>
+        <>
             <i onClick={toggleShowSettings} className="fas fa-ellipsis-v openSettingsBtn"></i>
 
             {showSettings &&
@@ -138,7 +138,7 @@ const Settings = ({ movie, currentTab, updateMovieCard }) => {
                     <div id="overlay" onClick={toggleShowSettings}></div>
                 </>
             }
-        </span >
+        </ >
     );
 }
 
