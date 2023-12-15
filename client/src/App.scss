@@ -1,5 +1,11 @@
 @import url("https://fonts.googleapis.com/css2?family=Poppins:wght@300;400&display=swap");
 
+@media (max-width: 600px) {
+    * {
+        zoom: .994;
+    }
+}
+
 body {
     font-family: "Poppins", sans-serif;
     font-size: 14px;
@@ -40,8 +46,10 @@ body {
     background-color: transparent !important;
     height: 95%;
 
-    >* {
-        zoom: 0.8;
+    @media (max-width: 600px) {
+        >* {
+            zoom: 0.95;
+        }
     }
 
     .movies {
