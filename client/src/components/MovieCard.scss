@@ -152,6 +152,7 @@
         margin-right: 4px;
         width: 200px;
         box-shadow: -8px 8px 12px 1px #aaaaaa;
+        background-color: rgb(235, 235, 235);
     }
 
     .fas {
@@ -169,6 +170,7 @@
         background-color: white;
         text-decoration: none;
         text-align: left;
+        margin: .5px;
 
         &:hover {
             background-color: #e6fff5;
