@@ -1,4 +1,4 @@
-import './App.css';
+import './App.scss';
 import Movies from "./components/Movies"
 import Header from "./components/Header/Header"
 import Constants from "./Constants"
@@ -169,12 +169,12 @@ function App() {
       <Header handleTabChange={handleTabChange} handleSearchInput={handleSearchInput} currentTab={currentTab} searchInputRef={searchInputRef}></Header>
 
       <div className="amcBtnContainer">
-        <button className="amcBtn" onClick={openAmcModal}>Showings at AMC</button>
+        <button onClick={openAmcModal}>Showings at AMC</button>
       </div>
 
       <Movies movies={movies} currentTab={currentTab} updateMovieCard={updateMovieCard}></Movies>
 
-      <Modal open={displayAmcModal} onClose={closeAmcModal} center>
+      <Modal open={displayAmcModal} onClose={closeAmcModal}>
         <h3 className="amcLabel">Now Showing at AMC</h3>
         <Movies movies={amcMovies} currentTab={Constants.TAB_AMC} updateMovieCard={updateMovieCard} />
       </Modal>
