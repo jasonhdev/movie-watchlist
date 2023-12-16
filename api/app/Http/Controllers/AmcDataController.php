@@ -68,12 +68,10 @@ class AmcDataController extends Controller
             ->limit(6);
 
         // Skip fetch on already added movies and any bad amc API data
-        $excludeTitles = $watchlistQuery->union($historyQuery)
+        $alreadyAdded = $watchlistQuery->union($historyQuery)
             ->get()
             ->pluck('title')
             ->toArray();
-
-        $excludeTitles = array_merge($excludeTitles, self::IGNORED_WORDS);
 
         $response = Http::withHeaders([
             "X-AMC-Vendor-Key" => env("AMC_KEY")
@@ -89,11 +87,16 @@ class AmcDataController extends Controller
             $title = trim($amcData['name']);
             //TODO: Need better title comparison
 
-            if (in_array($title, $excludeTitles)) {
+            if (in_array($title, self::IGNORED_WORDS)) {
+                continue;
+            }
+
+            if (in_array($title, $alreadyAdded)) {
                 // Add skeleton of movies already in watchlist for usage on refresh action
                 $movie = new AmcData();
                 $movie->title = $title;
                 $movie->added = true;
+                $movie->amc_title = $title;
                 $movie->save();
                 continue;
             }

@@ -2,8 +2,10 @@
 
 namespace App\Services;
 
+use App\Models\AmcData;
 use Symfony\Component\Process\Process;
 use Symfony\Component\Process\Exception\ProcessFailedException;
+use App\Services\DB;
 
 class MovieService
 {
@@ -17,6 +19,18 @@ class MovieService
             throw new ProcessFailedException($process);
         }
 
-        return json_decode($process->getOutput(), true);
+        $movieData = json_decode($process->getOutput(), true);
+
+        // Check if movie is playing at AMC
+        if ($movieData) {
+            $titleCount = AmcData::select('*')
+                ->where('title', 'LIKE', "%$searchTerm%")
+                ->orWhere('title', 'LIKE', "%" . $movieData['title'] . "%")
+                ->count();
+
+            $movieData['amc'] = $titleCount >= 1;
+        }
+
+        return $movieData;
     }
 }

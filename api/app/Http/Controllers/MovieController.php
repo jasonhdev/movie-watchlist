@@ -102,6 +102,7 @@ class MovieController extends Controller
         $movie->runtime = $movieData['runtime'] ?? null;
         $movie->services = $movieData['services'] ?? null;
         $movie->release_date = $movieData['releaseDate'] ?? null;
+        $movie->amc = $movieData['amc'] ?? 0;
 
         $movie->search_term = $request->searchTerm;
 
@@ -152,6 +153,7 @@ class MovieController extends Controller
                         $movie->runtime = $movieData['runtime'] ?? null;
                         $movie->services = $movieData['services'] ?? null;
                         $movie->release_date = $movieData['releaseDate'] ?? null;
+                        $movie->amc = $movieData['amc'] ?? 0;
                     }
                     break;
 
