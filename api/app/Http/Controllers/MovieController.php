@@ -13,7 +13,6 @@ class MovieController extends Controller
     const LIST_WATCH = "watch";
     const LIST_UPCOMING = "upcoming";
     const LIST_HISTORY = "history";
-    const LIST_AMC = "amc";
 
     const ACTION_WATCH = "watch";
     const ACTION_FEATURE = "feature";
@@ -49,10 +48,6 @@ class MovieController extends Controller
                 foreach ($movies as $key => $movie) {
                     $movies[$key]['watched_date'] = date("M j, Y", strtotime($movie['watched_date']));
                 }
-                break;
-            case self::LIST_AMC:
-                $movies = AmcData::select('*')
-                    ->get();
                 break;
             case self::LIST_WATCH:
                 $movies = Movie::select('*')
@@ -201,6 +196,8 @@ class MovieController extends Controller
 
     public function refreshAll(): void
     {
+        // $amcMovies = AmcData::select
+        // TODO: Compare against amc_data table to set amc to 0
         $movies = Movie::select('*')
             ->where(function ($query) {
                 $query->where('watched', '=', 0)

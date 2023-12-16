@@ -27,6 +27,7 @@ class AmcDataController extends Controller
     public function index(): JsonResponse
     {
         $movies = AmcData::select('*')
+            ->where('added', '!=', 1)
             ->orderBy('tomato', 'desc')
             ->orderBy('imdb', 'desc')
             ->get()
@@ -87,7 +88,13 @@ class AmcDataController extends Controller
 
             $title = trim($amcData['name']);
             //TODO: Need better title comparison
+
             if (in_array($title, $excludeTitles)) {
+                // Add skeleton of movies already in watchlist for usage on refresh action
+                $movie = new AmcData();
+                $movie->title = $title;
+                $movie->added = true;
+                $movie->save();
                 continue;
             }
 
@@ -122,17 +129,18 @@ class AmcDataController extends Controller
 
         if (AmcData::where('id', $id)->exists()) {
             $amcData = AmcData::find($id);
+            $amcData->added = 1;
+            $amcData->save();
 
             $amcDataArray = $amcData->toArray();
             $amcDataArray['search_term'] = $amcDataArray['amc_title'];
             $amcDataArray['released'] = 1;
             $amcDataArray['amc'] = 1;
-            unset($amcDataArray['amc_title']);
+
+            unset($amcDataArray['amc_title'], $amcDataArray['added']);
 
             $movie->fill($amcDataArray);
             $movie->save();
-
-            $amcData->delete();
 
             return response()->json([
                 'message' => 'AMC movie added.',

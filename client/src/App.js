@@ -152,6 +152,11 @@ function App() {
   }
 
   const fetchMovieList = async (list = Constants.TAB_WATCH) => {
+    if (list === Constants.TAB_AMC) {
+      const response = await fetch(process.env.REACT_APP_API_URL + "/amc");
+      return await response.json();
+    }
+
     const response = await fetch(process.env.REACT_APP_API_URL + "?list=" + list);
     return await response.json();
   }

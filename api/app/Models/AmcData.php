@@ -23,5 +23,6 @@ class AmcData extends Model
         'runtime',
         'release_date',
         'amc_title',
+        'added',
     ];
 }
