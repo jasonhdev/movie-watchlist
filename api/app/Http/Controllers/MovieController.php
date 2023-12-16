@@ -2,12 +2,11 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\AmcData;
-use Illuminate\Http\Request;
 use App\Models\Movie;
+use App\Models\AmcData;
+use App\Services\MovieService;
+use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
-use Symfony\Component\Process\Process;
-use Symfony\Component\Process\Exception\ProcessFailedException;
 
 class MovieController extends Controller
 {
@@ -20,6 +19,13 @@ class MovieController extends Controller
     const ACTION_FEATURE = "feature";
     const ACTION_DELETE = "delete";
     const ACTION_REFRESH = "refresh";
+
+    private MovieService $movieService;
+
+    public function __construct(MovieService $movieService)
+    {
+        $this->movieService = $movieService;
+    }
 
     public function index(Request $request): JsonResponse
     {
@@ -66,27 +72,17 @@ class MovieController extends Controller
         return response()->json($movies);
     }
 
-    public function searchMovie(Request $request): JsonResponse
+    // Unused, for testing by url
+    public function testSearchMovie(Request $request): JsonResponse
     {
-        // sleep(2);
-        // return response()->json([
-        //     'success' => true,
-        //     'movieData' => "{\"title\": \"Interstellar\", \"description\": \"In Earth's future, a global crop blight and second Dust Bowl are slowly rendering the planet uninhabitable. Professor Brand (Michael Caine), a brilliant NASA physicist, is working on plans to save mankind by transporting Earth's population to a new home via a wormhole. But first, Brand must send former NASA pilot Cooper (Matthew McConaughey) and a team of researchers through the wormhole and across the galaxy to find out which of three planets could be mankind's new home.\\u2026\\u00a0MORE\", \"tomato\": \"73%\", \"imdb\": \"8.7/10\", \"image\": \"//upload.wikimedia.org/wikipedia/en/b/bc/Interstellar_film_poster.jpg\", \"trailer\": \"https://www.youtube.com/attribution_link?utm_campaign=ytcore&yt_product=ytalc&yt_goal=acq&utm_source=int&utm_medium=gs&utm_content=ump&yt_campaign_id=ytalc22&c=ytcore-ytalc-acq-int-gs-ump-ytalc22&utm_term=video&u=https%3A%2F%2Fwww.youtube.com%2Fwatch%3Fv%3DoCjW6gdEDa4\", \"rating\": \"PG-13\", \"year\": \"2014\", \"genre\": \"Sci-fi/Adventure\", \"runtime\": \"2h 49m\", \"services\": \"Mgmplus\", \"torrent\": \"https://yts.mx/movies/interstellar-2014\", \"releaseDate\": \"October 26, 2014\", \"watched\": 0}\r\n",
-        // ]);
-
-        $searchTerm = $request->searchTerm;
-
-        $pythonPath = resource_path() . "/python/";
-        $process = new Process([$pythonPath . ".env/Scripts/python.exe", $pythonPath . 'movieScraper.py', $searchTerm]);
-        $process->run();
-
-        if (!$process->isSuccessful()) {
-            throw new ProcessFailedException($process);
+        $movieData = [];
+        if ($searchTerm = $request->searchTerm) {
+            $movieData = $this->movieService->searchMovie($searchTerm);
         }
 
         return response()->json([
             'success' => true,
-            'movieData' => $process->getOutput(),
+            'movieData' => $movieData,
         ]);
     }
 
@@ -96,36 +92,34 @@ class MovieController extends Controller
 
         $list = $request->list;
 
-        if ($searchResponse = $this->searchMovie($request)) {
+        // Allow function to complete despite failed search, to save search term
+        $movieData = $this->movieService->searchMovie($request->searchTerm);
 
-            $movieData = json_decode(json_decode($searchResponse->getContent(), true)['movieData'], true);
+        $movie->title = $movieData['title'] ?? $request->searchTerm;
+        $movie->description = $movieData['description'] ?? null;
+        $movie->tomato = $movieData['tomato'] ?? null;
+        $movie->imdb = $movieData['imdb'] ?? null;
+        $movie->poster_url = $movieData['image'] ?? null;
+        $movie->trailer_url = $movieData['trailer'] ?? null;
+        $movie->rating = $movieData['rating'] ?? null;
+        $movie->year = $movieData['year'] ?? null;
+        $movie->genre = $movieData['genre'] ?? null;
+        $movie->runtime = $movieData['runtime'] ?? null;
+        $movie->services = $movieData['services'] ?? null;
+        $movie->release_date = $movieData['releaseDate'] ?? null;
 
-            $movie->title = $movieData['title'] ?? $request->searchTerm;
-            $movie->description = $movieData['description'] ?? null;
-            $movie->tomato = $movieData['tomato'] ?? null;
-            $movie->imdb = $movieData['imdb'] ?? null;
-            $movie->poster_url = $movieData['image'] ?? null;
-            $movie->trailer_url = $movieData['trailer'] ?? null;
-            $movie->rating = $movieData['rating'] ?? null;
-            $movie->year = $movieData['year'] ?? null;
-            $movie->genre = $movieData['genre'] ?? null;
-            $movie->runtime = $movieData['runtime'] ?? null;
-            $movie->services = $movieData['services'] ?? null;
-            $movie->release_date = $movieData['releaseDate'] ?? null;
+        $movie->search_term = $request->searchTerm;
 
-            $movie->search_term = $request->searchTerm;
-
-            if ($list === self::LIST_UPCOMING) {
-                $movie->released = false;
-            }
-
-            if ($list === self::LIST_HISTORY) {
-                $movie->watched = true;
-                $movie->watched_date = date("Y-m-d H:i:s");
-            }
-
-            $movie->save();
+        if ($list === self::LIST_UPCOMING) {
+            $movie->released = false;
         }
+
+        if ($list === self::LIST_HISTORY) {
+            $movie->watched = true;
+            $movie->watched_date = date("Y-m-d H:i:s");
+        }
+
+        $movie->save();
 
         return response()->json([
             'message' => 'Movie added.',
@@ -150,12 +144,7 @@ class MovieController extends Controller
                     break;
 
                 case self::ACTION_REFRESH:
-                    $request->merge(['searchTerm' => $movie->search_term]);
-
-                    if ($searchResponse = $this->searchMovie($request)) {
-
-                        $movieData = json_decode(json_decode($searchResponse->getContent(), true)['movieData'], true);
-
+                    if ($movieData = $this->movieService->searchMovie($movie->search_term)) {
                         $movie->title = $movieData['title'] ?? $request->searchTerm;
                         $movie->description = $movieData['description'] ?? null;
                         $movie->tomato = $movieData['tomato'] ?? null;
@@ -226,8 +215,6 @@ class MovieController extends Controller
             ->get();
 
         foreach ($movies as $movie) {
-
-
         }
     }
 }

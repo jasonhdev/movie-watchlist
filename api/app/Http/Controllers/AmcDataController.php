@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\AmcData;
 use App\Models\Movie;
+use App\Services\MovieService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use Symfony\Component\Process\Process;
@@ -15,6 +16,13 @@ class AmcDataController extends Controller
     const IGNORED_WORDS = [
         '$99 Private Theatre Rental',
     ];
+
+    private MovieService $movieService;
+
+    public function __construct(MovieService $movieService)
+    {
+        $this->movieService = $movieService;
+    }
 
     public function index(): JsonResponse
     {
@@ -89,7 +97,7 @@ class AmcDataController extends Controller
         foreach ($amcMovies as $amcTitle) {
             $movie = new AmcData();
 
-            $movieData = $this->searchMovie($amcTitle);
+            $movieData = $this->movieService->searchMovie($amcTitle);
 
             $movie->title = $movieData['title'] ?? $amcTitle;
             $movie->description = $movieData['description'] ?? null;
@@ -131,19 +139,5 @@ class AmcDataController extends Controller
                 'movie' => $movie,
             ]);
         }
-    }
-
-    // TODO: Could be merged with MovieController's same function
-    private function searchMovie(string $searchTerm): ?array
-    {
-        $pythonPath = resource_path() . "/python/";
-        $process = new Process([$pythonPath . ".env/Scripts/python.exe", $pythonPath . 'movieScraper.py', $searchTerm]);
-        $process->run();
-
-        if (!$process->isSuccessful()) {
-            throw new ProcessFailedException($process);
-        }
-
-        return json_decode($process->getOutput(), true);
     }
 }
