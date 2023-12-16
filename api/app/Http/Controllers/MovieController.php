@@ -135,15 +135,13 @@ class MovieController extends Controller
 
     public function updateMovie(Request $request, $id): JsonResponse
     {
-        $currentDate = date("Y-m-d H:i:s");
-
         if (Movie::where('id', $id)->exists()) {
             $movie = Movie::find($id);
 
             switch ($action = $request->get('action')) {
                 case self::ACTION_WATCH:
                     $movie->watched = $request->watched;
-                    $movie->watched_date = $currentDate;
+                    $movie->watched_date = date("Y-m-d H:i:s");
                     $movie->released = $request->released;
                     break;
 
@@ -179,6 +177,9 @@ class MovieController extends Controller
 
             $movie->save();
 
+            // Display clean data after save
+            $movie->watched_date = date("M j, Y", strtotime($movie->watched_date));
+
             return response()->json([
                 'message' => 'Movie updated.',
                 'action' => $action,
@@ -206,6 +207,27 @@ class MovieController extends Controller
             return response()->json([
                 'message' => 'Movie not found.'
             ]);
+        }
+    }
+
+    public function refreshAll(): void
+    {
+        $movies = Movie::select('*')
+            ->where(function ($query) {
+                $query->where('watched', '=', 0)
+                    ->orWhere('released', '=', 0);
+            })
+            ->where(function ($query) {
+                $query->whereNull('year')
+                    ->orWhere('year', '>=', date("Y"));
+            })
+            ->orderBy('updated_at', 'asc')
+            ->limit(10)
+            ->get();
+
+        foreach ($movies as $movie) {
+
+
         }
     }
 }
