@@ -110,9 +110,10 @@ def getMovieInfo(search):
                         releaseDate = content.find(attrs={"data-attrid": "kc:/film/film:release date"})
 
                     releaseDate = releaseDate.text
-                    releaseDate = releaseDate.replace(" (USA)", "")
-                    releaseDate = releaseDate.replace("Release date: ", "")
+                    releaseDate = re.sub(r"\((.*?)\)", "", releaseDate)
+                    releaseDate = releaseDate.replace("Release date:", "")
                     releaseDate = releaseDate.replace("Initial release: ", "")
+                    releaseDate = releaseDate.strip()
                 except:
                     pass
             except:
@@ -229,6 +230,7 @@ def getMovieInfo(search):
         if subscription or premiumSubscription or free:
             service = serviceDiv.find("a")['href']
             service = service.replace("https://", "")
+            service = service.replace("http://", "")
             service = service.replace("www.", "")
             service = service[0:service.index(".")].capitalize()
 
