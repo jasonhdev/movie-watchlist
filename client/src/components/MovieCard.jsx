@@ -22,10 +22,12 @@ const MovieCard = ({ movie, currentTab, isLoading, updateMovieCard }) => {
             </p>
 
             {
-                (currentTab === Constants.TAB_WATCH && movie.services) ? <p>Watch on: {movie.services}</p>
-                    : (currentTab === Constants.TAB_UPCOMING) ? <p>Release Date: {movie.release_date ?? "TBD"}</p>
-                        : (currentTab === Constants.TAB_HISTORY) ? <p>Watched on: {movie.watched_date}</p>
-                            : ""
+            //    style="max-height: 40px; max-width: 40px; vertical-align: middle;">
+                (currentTab === Constants.TAB_WATCH && movie.amc) ? <img src="amc.png" className="amcLogo"></img> :
+                    (currentTab === Constants.TAB_WATCH && movie.services) ? <p>Watch on: {movie.services}</p>
+                        : (currentTab === Constants.TAB_UPCOMING) ? <p>Release Date: {movie.release_date ?? "TBD"}</p>
+                            : (currentTab === Constants.TAB_HISTORY) ? <p>Watched on: {movie.watched_date}</p>
+                                : ""
             }
 
             {
