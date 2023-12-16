@@ -198,8 +198,6 @@ class MovieController extends Controller
 
     public function refreshAll(): void
     {
-        // $amcMovies = AmcData::select
-        // TODO: Compare against amc_data table to set amc to 0
         $movies = Movie::select('*')
             ->where(function ($query) {
                 $query->where('watched', '=', 0)
@@ -214,6 +212,7 @@ class MovieController extends Controller
             ->get();
 
         foreach ($movies as $movie) {
+            // TODO:: refresh action
         }
     }
 }

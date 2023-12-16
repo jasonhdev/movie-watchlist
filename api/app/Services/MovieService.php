@@ -22,14 +22,15 @@ class MovieService
         $movieData = json_decode($process->getOutput(), true);
 
         // Check if movie is playing at AMC
+        $titleCount = 0;
         if ($movieData) {
             $titleCount = AmcData::select('*')
                 ->where('title', 'LIKE', "%$searchTerm%")
                 ->orWhere('title', 'LIKE', "%" . $movieData['title'] . "%")
                 ->count();
-
-            $movieData['amc'] = $titleCount >= 1;
         }
+
+        $movieData['amc'] = $titleCount >= 1;
 
         return $movieData;
     }
