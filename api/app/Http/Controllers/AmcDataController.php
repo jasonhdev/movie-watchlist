@@ -132,13 +132,13 @@ class AmcDataController extends Controller
 
         if (AmcData::where('id', $id)->exists()) {
             $amcData = AmcData::find($id);
-            $amcData->added = 1;
+            $amcData->added = true;
             $amcData->save();
 
             $amcDataArray = $amcData->toArray();
             $amcDataArray['search_term'] = $amcDataArray['amc_title'];
-            $amcDataArray['released'] = 1;
-            $amcDataArray['amc'] = 1;
+            $amcDataArray['released'] = true;
+            $amcDataArray['amc'] = true;
 
             unset($amcDataArray['amc_title'], $amcDataArray['added']);
 

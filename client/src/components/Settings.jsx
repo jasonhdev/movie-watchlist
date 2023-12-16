@@ -89,6 +89,8 @@ const Settings = ({ movie, currentTab, updateMovieCard }) => {
     const handleAmcMoveAction = () => {
         fetch(process.env.REACT_APP_API_URL + '/amc/create/' + movie.id);
 
+        movie.amc = 1;
+
         setShowSettings(false);
         updateMovieCard({
             'action': Constants.ACTION_AMC,
