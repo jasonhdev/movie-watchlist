@@ -54,6 +54,11 @@ class MovieService
             $movie->amc = $movieData['amc'] ?? 0;
         }
 
+        $releaseDate = $movie->release_date;
+        if ($releaseDate && !$movie->released) {
+            $movie->released = strtotime($releaseDate) < strtotime("today");
+        }
+
         return $movie;
     }
 }
