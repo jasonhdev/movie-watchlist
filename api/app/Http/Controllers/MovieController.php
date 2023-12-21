@@ -140,21 +140,7 @@ class MovieController extends Controller
                     break;
 
                 case self::ACTION_REFRESH:
-                    if ($movieData = $this->movieService->searchMovie($movie->search_term)) {
-                        $movie->title = $movieData['title'] ?? $request->searchTerm;
-                        $movie->description = $movieData['description'] ?? null;
-                        $movie->tomato = $movieData['tomato'] ?? null;
-                        $movie->imdb = $movieData['imdb'] ?? null;
-                        $movie->poster_url = $movieData['image'] ?? null;
-                        $movie->trailer_url = $movieData['trailer'] ?? null;
-                        $movie->rating = $movieData['rating'] ?? null;
-                        $movie->year = $movieData['year'] ?? null;
-                        $movie->genre = $movieData['genre'] ?? null;
-                        $movie->runtime = $movieData['runtime'] ?? null;
-                        $movie->services = $movieData['services'] ?? null;
-                        $movie->release_date = $movieData['releaseDate'] ?? null;
-                        $movie->amc = $movieData['amc'] ?? 0;
-                    }
+                    $movie = $this->movieService->getRefreshedMovieData($movie);
                     break;
 
                 default:
@@ -196,7 +182,7 @@ class MovieController extends Controller
         }
     }
 
-    public function refreshAll(): void
+    public function refreshBatch(): void
     {
         $movies = Movie::select('*')
             ->where(function ($query) {
@@ -212,7 +198,8 @@ class MovieController extends Controller
             ->get();
 
         foreach ($movies as $movie) {
-            // TODO:: refresh action
+            $movie = $this->movieService->getRefreshedMovieData($movie);
+            $movie->save();
         }
     }
 }
