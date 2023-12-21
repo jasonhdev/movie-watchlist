@@ -1,6 +1,7 @@
 .vscode
 
 # dependencies
+api/vendor
 client/node_modules
 
 # production

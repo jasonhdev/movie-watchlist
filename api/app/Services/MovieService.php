@@ -11,8 +11,8 @@ class MovieService
 {
     public function searchMovie(string $searchTerm): ?array
     {
-        $pythonPath = resource_path() . "/python/";
-        $process = new Process([$pythonPath . ".env/Scripts/python.exe", $pythonPath . 'movieScraper.py', $searchTerm]);
+        $process = new Process([env("PYTHON_PATH"), resource_path() . "/python/movieScraper.py", $searchTerm]);
+        
         $process->run();
 
         if (!$process->isSuccessful()) {
