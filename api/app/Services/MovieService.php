@@ -55,7 +55,7 @@ class MovieService
         }
 
         $releaseDate = $movie->release_date;
-        if ($releaseDate && !$movie->released) {
+        if (null !== $releaseDate && !$movie->released) {
             $movie->released = strtotime($releaseDate) < strtotime("today");
         }
 

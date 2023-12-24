@@ -47,7 +47,7 @@ function App() {
   const handleSearchInput = async (e) => {
     let search = e.target.value;
 
-    if (e.code === "Enter" && search) {
+    if (e.key === "Enter" && search) {
       searchInputRef.current.value = "";
 
       moviesCache[currentTab].unshift({
