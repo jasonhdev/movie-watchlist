@@ -17,14 +17,10 @@ const Settings = ({ movie, currentTab, updateMovieCard }) => {
 
         movie.watched = currentTab === Constants.TAB_WATCH;
 
-        if (currentTab === Constants.TAB_UPCOMING) {
-            movie.released = true;
-        }
-
         const data = {
             'action': Constants.ACTION_WATCH,
             'watched': movie.watched,
-            'released': movie.released,
+            'released': true, // will always be released if movie is moved out of upcoming
         }
 
         updateRequestOptions.body = JSON.stringify(data)
