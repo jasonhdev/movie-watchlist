@@ -2,15 +2,22 @@ import './MovieCard.scss';
 import './Settings';
 import Settings from './Settings';
 import Constants from "../Constants";
+import { useState, useEffect } from "react";
 
 const MovieCard = ({ movie, currentTab, isLoading, updateMovieCard }) => {
+
+    const [displayExtraView, setDisplayExtraView] = useState(false);
+
+    const toggleExtraView = () => {
+        setDisplayExtraView(!displayExtraView);
+    }
 
     const getInfoSection = () => {
         if (isLoading) {
             return <div className="loadingRing"><span></span></div>
         }
 
-        return <>
+        return <div className="subInfoContainer">
             <p className="metaDataRow">
                 <span className="rating">{movie.rating ?? "NA"}</span>
                 {(currentTab !== Constants.TAB_UPCOMING && movie.year) && <span>{movie.year}</span>}
@@ -22,7 +29,6 @@ const MovieCard = ({ movie, currentTab, isLoading, updateMovieCard }) => {
             </p>
 
             {
-            //    style="max-height: 40px; max-width: 40px; vertical-align: middle;">
                 (currentTab === Constants.TAB_WATCH && movie.amc) ? <img src="amc.png" className="amcLogo"></img> :
                     (currentTab === Constants.TAB_WATCH && movie.services) ? <p>Watch on: {movie.services}</p>
                         : (currentTab === Constants.TAB_UPCOMING) ? <p>Release Date: {movie.release_date ?? "TBD"}</p>
@@ -30,29 +36,31 @@ const MovieCard = ({ movie, currentTab, isLoading, updateMovieCard }) => {
                                 : ""
             }
 
-            {
-                (movie.tomato || movie.imdb) &&
-                <div className="scoresRow">
-                    <span className="tomatoCol">
-                        {movie.tomato &&
-                            <>
-                                <img src="tomato.png" alt="Logo for Rotten Tomato"></img>
-                                <span className="score">{movie.tomato}</span>
-                            </>
-                        }
-                    </span>
-                    {movie.imdb &&
-                        <span className="imdbCol">
-                            <img className="imdbLogo" src="imdb.png" alt="Logo for IMDB"></img>
-                            <span className="score">{movie.imdb}</span>
+            <div class={'expandableSection ' + (displayExtraView ? 'extraView' : 'mainView')}>
+                {
+                    (movie.tomato || movie.imdb) &&
+                    <div className="scoresRow">
+                        <span className="tomatoCol">
+                            {movie.tomato &&
+                                <>
+                                    <img src="tomato.png" alt="Logo for Rotten Tomato"></img>
+                                    <span className="score">{movie.tomato}</span>
+                                </>
+                            }
                         </span>
-                    }
-                </div>
-            }
+                        {movie.imdb &&
+                            <span className="imdbCol">
+                                <img className="imdbLogo" src="imdb.png" alt="Logo for IMDB"></img>
+                                <span className="score">{movie.imdb}</span>
+                            </span>
+                        }
+                    </div>
+                }
 
-            {/* TODO: Expand/hide desc */}
-            <p className="description">{movie.description}</p>
-        </>
+                <hr></hr>
+                <p className="description" onClick={toggleExtraView}>{movie.description}</p>
+            </div>
+        </div>
     }
 
     return (

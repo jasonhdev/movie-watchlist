@@ -3,6 +3,7 @@
 @media (max-width: 600px) {
     * {
         zoom: .994;
+        -webkit-tap-highlight-color: transparent;
     }
 }
 
