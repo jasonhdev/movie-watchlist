@@ -112,34 +112,68 @@
 
 .description {
     font-size: 12px;
+    padding-right: 5px;
+    cursor: pointer;
 
     @media (max-width: 600px) {
         font-size: 10px;
     }
-
-    padding-right: 5px;
-    cursor: pointer;
 }
 
-.expandableSection {
-    position: absolute;
+.mainView {
+    .expandableSection {
+        position: absolute;
+        animation: .1s slideDown 0s forwards;
+    }
+}
 
-    &.extraView {
+.extraView {
+    .metaDataRow {
+        visibility: hidden;
+        opacity: 0;
+        transition: visibility 0s forwards;
+    }
+
+    .expandableSection {
+        position: absolute;
         background-color: #f4f4f4;
         height: 100%;
         animation: .1s slideUp 0s forwards;
-        overflow-y: visible;
-        line-height: 16px;
         overflow-y: scroll;
 
         >.description {
             font-size: 12px;
+            line-height: 16px;
         }
     }
-}
 
-.mainView {
-    animation: .1s slideDown 0s forwards;
+    @keyframes slideUp {
+        10% {
+            top: initial;
+        }
+
+        50% {
+            top: 30%;
+        }
+
+        100% {
+            top: 0%;
+        }
+    }
+
+    @keyframes slideDown {
+        10% {
+            top: 0%;
+        }
+
+        50% {
+            top: 30%;
+        }
+
+        100% {
+            top: initial;
+        }
+    }
 }
 
 .featuredStar {
@@ -237,34 +271,6 @@
 
         100% {
             transform: rotate(360deg);
-        }
-    }
-
-    @keyframes slideUp {
-        10% {
-            top: initial;
-        }
-
-        50% {
-            top: 30%;
-        }
-
-        100% {
-            top: 0%;
-        }
-    }
-
-    @keyframes slideDown {
-        10% {
-            top: 0%;
-        }
-
-        50% {
-            top: 30%;
-        }
-
-        100% {
-            top: initial;
         }
     }
 }

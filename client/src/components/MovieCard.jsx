@@ -36,7 +36,7 @@ const MovieCard = ({ movie, currentTab, isLoading, updateMovieCard }) => {
                                 : ""
             }
 
-            <div class={'expandableSection ' + (displayExtraView ? 'extraView' : 'mainView')}>
+            <div class='expandableSection'>
                 {
                     (movie.tomato || movie.imdb) &&
                     <div className="scoresRow">
@@ -64,7 +64,7 @@ const MovieCard = ({ movie, currentTab, isLoading, updateMovieCard }) => {
     }
 
     return (
-        <div movieid={movie.id} className="movieCard">
+        <div movieid={movie.id} className={"movieCard " + (displayExtraView ? 'extraView' : 'mainView')}>
             <div className="posterContainer">
                 {(movie.featured > 0 && currentTab === Constants.TAB_WATCH) && <i className="fas fa-star featuredStar"></i>}
                 <a href={movie.trailer_url} target="_blank" rel="noreferrer">
