@@ -47,6 +47,8 @@
     font-weight: bold;
     text-decoration: none;
     color: black;
+    margin-top: 5px;
+    line-height: 22px;
 }
 
 .rating {
@@ -68,6 +70,8 @@
     display: grid;
     grid-template-columns: 80px auto;
     max-width: 600px;
+    margin-top: -4px;
+    margin-bottom: -3px;
 
     .score {
         padding-left: 8px;
