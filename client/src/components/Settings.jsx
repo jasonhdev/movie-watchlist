@@ -99,44 +99,46 @@ const Settings = ({ movie, currentTab, updateMovieCard }) => {
     return (
 
         <>
-            <i onClick={toggleShowSettings} className="fas fa-ellipsis-v openSettingsBtn"></i>
+            <div className="settingsContainer">
+                <i onClick={toggleShowSettings} className="openSettingsBtn fas fa-ellipsis-v"></i>
 
-            {showSettings &&
-                <>
-                    <div className="settingsMenu">
-                        <div className="actions">
-                            <button onClick={currentTab === Constants.TAB_AMC ? handleAmcMoveAction : handleWatchAction}>
-                                <i className={movie.watched ? 'fas fa-video' : 'fas fa-eye'}></i>
-                                <span>{movie.watched || [Constants.TAB_UPCOMING, Constants.TAB_AMC].includes(currentTab) ?
-                                    'Move to watch' : 'Watched'}
-                                </span>
-                            </button>
-
-                            {currentTab === 'watch' &&
-                                <button onClick={handleFeatureAction}>
-                                    <i className="fas fa-star"></i>
-                                    {movie.featured ? 'Unfeature' : 'Feature'}
+                {showSettings &&
+                    <>
+                        <div className="settingsMenu">
+                            <div className="actions">
+                                <button onClick={currentTab === Constants.TAB_AMC ? handleAmcMoveAction : handleWatchAction}>
+                                    <i className={movie.watched ? 'fas fa-video' : 'fas fa-eye'}></i>
+                                    <span>{movie.watched || [Constants.TAB_UPCOMING, Constants.TAB_AMC].includes(currentTab) ?
+                                        'Move to watch' : 'Watched'}
+                                    </span>
                                 </button>
-                            }
 
-                            {currentTab !== 'amc' &&
-                                <>
-                                    <button onClick={handleRefreshAction}>
-                                        <i className="fas fa-sync-alt"></i>
-                                        <span>Refresh Info</span>
+                                {currentTab === 'watch' &&
+                                    <button onClick={handleFeatureAction}>
+                                        <i className="fas fa-star"></i>
+                                        {movie.featured ? 'Unfeature' : 'Feature'}
                                     </button>
-                                    <button onClick={handleDeleteAction}>
-                                        <i className="fas fa-trash"></i>
-                                        <span>Delete</span>
-                                    </button>
-                                </>
-                            }
+                                }
+
+                                {currentTab !== 'amc' &&
+                                    <>
+                                        <button onClick={handleRefreshAction}>
+                                            <i className="fas fa-sync-alt"></i>
+                                            <span>Refresh Info</span>
+                                        </button>
+                                        <button onClick={handleDeleteAction}>
+                                            <i className="fas fa-trash"></i>
+                                            <span>Delete</span>
+                                        </button>
+                                    </>
+                                }
+                            </div>
                         </div>
-                    </div>
-                    <div id="overlay" onClick={toggleShowSettings}></div>
-                </>
-            }
-        </ >
+                        <div id="overlay" onClick={toggleShowSettings}></div>
+                    </>
+                }
+            </div>
+        </>
     );
 }
 

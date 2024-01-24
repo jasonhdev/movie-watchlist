@@ -191,7 +191,12 @@
     position: fixed;
     top: 0px;
     left: 0px;
-    z-index: 2;
+    z-index: 1;
+}
+
+.settingsContainer {
+    position: relative;
+    float: inline-end;
 }
 
 .openSettingsBtn {
@@ -212,14 +217,11 @@
 
 .settingsMenu {
     position: relative;
-    z-index: 1;
+    z-index: 2;
 
     .actions {
         position: absolute;
-        top: 0;
-        right: 0;
-        margin-top: -30px;
-        margin-right: 4px;
+        right: 4px;
         width: 200px;
         box-shadow: -8px 8px 12px 1px #aaaaaa;
         background-color: rgb(235, 235, 235);
