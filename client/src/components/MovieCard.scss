@@ -40,15 +40,23 @@
     height: 190px;
 }
 
-.titleRow a {
-    display: inline-block;
-    max-width: 90%;
-    font-size: 20px;
-    font-weight: bold;
-    text-decoration: none;
-    color: black;
-    margin-top: 5px;
-    line-height: 22px;
+.titleRow {
+    a {
+        display: inline-block;
+        margin-top: 5px;
+        line-height: 22px;
+        max-width: 90%;
+        font-size: 20px;
+        font-weight: bold;
+        color: black;
+        text-decoration: none;
+        cursor: default;
+        pointer-events: none;
+    }
+
+    .fa-link {
+        visibility: hidden;
+    }
 }
 
 .rating {
@@ -134,6 +142,21 @@
     .scoresRow {
         zoom: .8;
     }
+
+    a {
+        pointer-events: auto;
+        cursor: pointer;
+        position: relative;
+
+        .fa-link {
+            position: absolute;
+            right: -4px;
+            color: purple;
+            font-size: 12px;
+            visibility: visible;
+        }
+    }
+
 
     .metaDataRow {
         visibility: hidden;

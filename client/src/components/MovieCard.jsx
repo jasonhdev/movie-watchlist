@@ -76,7 +76,10 @@ const MovieCard = ({ movie, currentTab, isLoading, updateMovieCard }) => {
 
             <div className="infoContainer">
                 <div className="titleRow">
-                    <a className="movieTitle" target="_blank" rel="noreferrer" href={'https://www.google.com/search?q=' + movie.title}>{movie.title}</a>
+                    <a className="movieTitle" target="_blank" rel="noreferrer" href={'https://www.google.com/search?q=' + movie.title}>
+                        {movie.title}
+                        &nbsp;&nbsp;<i class="fa fa-link"></i>
+                    </a>
                     <Settings movie={movie} currentTab={currentTab} updateMovieCard={updateMovieCard}></Settings>
                 </div>
 
