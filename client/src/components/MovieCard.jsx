@@ -13,7 +13,7 @@ const MovieCard = ({ movie, currentTab, isLoading, updateMovieCard }) => {
     }, [movie])
 
     const toggleExtraView = () => {
-        setDisplayExtraView(!displayExtraView);
+        setDisplayExtraView(!displayExtraView); 
     }
 
     const getInfoSection = () => {
@@ -73,9 +73,10 @@ const MovieCard = ({ movie, currentTab, isLoading, updateMovieCard }) => {
             <div className="posterContainer">
                 {(movie.featured > 0 && currentTab === Constants.TAB_WATCH) && <i className="fas fa-star featuredStar"></i>}
                 <a href={movie.trailer_url} target="_blank" rel="noreferrer">
-                    <span className={movie.poster_url ? "" : "fallbackPoster"}>
-                        <img src={movie.poster_url ? 'https://' + movie.poster_url : "default.png"} alt={'Movie poster for ' + movie.title}></img>
-                    </span>
+                    <div className={movie.poster_url ? "moviePoster" : "fallbackPoster"}>
+                        <img className='moviePoster' src={movie.poster_url ? 'https://' + movie.poster_url : "default.png"} alt={'Movie poster for ' + movie.title}></img>
+                        <img className='youtubeIcon' src="youtube.png" alt={'Trailer for ' + movie.title}></img>
+                    </div>
                 </a>
             </div>
 
