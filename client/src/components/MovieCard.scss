@@ -32,7 +32,6 @@
     }
 
     img {
-        padding: 1px;
         max-height: 200px;
         max-width: 135px;
         border-radius: 10px;
@@ -167,6 +166,10 @@
             margin-left: 7%;
             opacity: 80%;
             animation: 1s appearOnFlip 0s forwards;
+
+            &:hover, &:active {
+                opacity: 100%;
+            }
         }
     }
 
@@ -181,7 +184,6 @@
         }
 
         100% {
-            opacity: 80%;
             transform: rotateY(360deg);
         }
     }
