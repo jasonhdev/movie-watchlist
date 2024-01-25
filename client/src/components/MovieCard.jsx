@@ -37,25 +37,26 @@ const MovieCard = ({ movie, currentTab, isLoading, updateMovieCard }) => {
             }
 
             <div class='expandableSection'>
-                {
-                    (movie.tomato || movie.imdb) &&
-                    <div className="scoresRow">
-                        <span className="tomatoCol">
-                            {movie.tomato &&
-                                <>
-                                    <img src="tomato.png" alt="Logo for Rotten Tomato"></img>
-                                    <span className="score">{movie.tomato}</span>
-                                </>
-                            }
-                        </span>
-                        {movie.imdb &&
-                            <span className="imdbCol">
-                                <img className="imdbLogo" src="imdb.png" alt="Logo for IMDB"></img>
-                                <span className="score">{movie.imdb}</span>
+                <div className="scoresRow">
+                    {(movie.tomato || movie.imdb) &&
+                        <>
+                            <span className="tomatoCol">
+                                {movie.tomato &&
+                                    <>
+                                        <img src="tomato.png" alt="Logo for Rotten Tomato"></img>
+                                        <span className="score">{movie.tomato}</span>
+                                    </>
+                                }
                             </span>
-                        }
-                    </div>
-                }
+                            {movie.imdb &&
+                                <span className="imdbCol">
+                                    <img className="imdbLogo" src="imdb.png" alt="Logo for IMDB"></img>
+                                    <span className="score">{movie.imdb}</span>
+                                </span>
+                            }
+                        </>
+                    }
+                </div>
 
                 <hr></hr>
                 <p className="description" onClick={toggleExtraView}>{movie.description}</p>
