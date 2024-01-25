@@ -8,6 +8,10 @@ const MovieCard = ({ movie, currentTab, isLoading, updateMovieCard }) => {
 
     const [displayExtraView, setDisplayExtraView] = useState(false);
 
+    useEffect(() => { 
+        setDisplayExtraView(false)
+    }, [movie])
+
     const toggleExtraView = () => {
         setDisplayExtraView(!displayExtraView);
     }
