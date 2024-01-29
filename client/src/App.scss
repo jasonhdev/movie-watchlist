@@ -45,7 +45,7 @@ body {
     margin: 10px 6px !important;
     background-color: transparent !important;
     overflow: hidden !important;
-    height: 95%;
+    height: 100%;
 
     @media (max-width: 600px) {
         >* {
@@ -54,14 +54,14 @@ body {
     }
 
     .movies {
-        margin-top: 35px;
+        margin-top: 40px;
         overflow: scroll;
         height: 95%;
     }
 
     .amcModalLabel {
         position: fixed;
-        top: -18px;
+        top: -15px;
         color: white;
         font-size: 18px;
         background-color: #f50127;
@@ -71,10 +71,13 @@ body {
     }
 
     .closeModalBtn {
+        position: fixed;
         color: white;
         font-size: 18px;
-        margin: -15px;
-        padding: 5px 15px 5px 35px;
+        top: -12px;
+        right: 10px;
+        margin-bottom: 10px;
+        padding: 5px 0 0 50px;
     }
 }
 
