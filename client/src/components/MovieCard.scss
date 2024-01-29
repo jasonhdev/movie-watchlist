@@ -151,7 +151,7 @@
 .extraView {
     .posterContainer {
         border-radius: 10px;
-        animation: 1s flip 0s forwards;
+        animation: 1s flipCard 0s forwards;
 
         img.moviePoster {
             opacity: .4;
@@ -167,35 +167,10 @@
             opacity: 80%;
             animation: 1s appearOnFlip 0s forwards;
 
-            &:hover, &:active {
+            &:hover,
+            &:active {
                 opacity: 100%;
             }
-        }
-    }
-
-    @keyframes appearOnFlip {
-        0% {
-            opacity: 0%;
-            transform: rotateY(200deg);
-        }
-
-        30% {
-            opacity: 0%;
-        }
-
-        100% {
-            transform: rotateY(360deg);
-        }
-    }
-
-    @keyframes flip {
-        0% {
-            transform: rotateY(200deg);
-        }
-
-        100% {
-            transform: rotateY(360deg);
-            background-color: black;
         }
     }
 
@@ -209,15 +184,19 @@
         cursor: pointer;
         position: relative;
 
+        &:hover {
+            color: #7a1a9c;
+        }
+
+
         .fa-link {
             position: absolute;
-            color: purple;
+            color: #7a1a9c;
             padding-left: 5px;
             font-size: 12px;
             visibility: visible;
         }
     }
-
 
     .metaDataRow {
         visibility: hidden;
@@ -267,6 +246,32 @@
 
         100% {
             top: initial;
+        }
+    }
+
+    @keyframes appearOnFlip {
+        0% {
+            opacity: 0%;
+            transform: rotateY(200deg);
+        }
+
+        30% {
+            opacity: 0%;
+        }
+
+        100% {
+            transform: rotateY(360deg);
+        }
+    }
+
+    @keyframes flipCard {
+        0% {
+            transform: rotateY(200deg);
+        }
+
+        100% {
+            transform: rotateY(360deg);
+            background-color: black;
         }
     }
 }
