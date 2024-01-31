@@ -169,29 +169,36 @@ function App() {
   }
 
   return (
-    isLoaded === true &&
-    <div className="container">
-      <Header handleTabChange={handleTabChange} handleSearchInput={handleSearchInput} currentTab={currentTab} searchInputRef={searchInputRef}></Header>
+    <>
+      {!isLoaded &&
+        <div className="pageLoadRing"><span></span></div>
+      }
 
-      <div className="amcBtnContainer">
-        <button onClick={openAmcModal}>Showings at AMC</button>
-      </div>
+      {isLoaded === true &&
+        <div className="container">
+          <Header handleTabChange={handleTabChange} handleSearchInput={handleSearchInput} currentTab={currentTab} searchInputRef={searchInputRef}></Header>
 
-      <Movies movies={movies} currentTab={currentTab} updateMovieCard={updateMovieCard}></Movies>
+          <div className="amcBtnContainer">
+            <button onClick={openAmcModal}>Showings at AMC</button>
+          </div>
 
-      <Modal
-        open={displayAmcModal}
-        onClose={closeAmcModal}
-        classNames={{
-          overlay: 'amcOverlay',
-          modal: 'amcModal',
-        }}
-        closeIcon={<p className="closeModalBtn">close</p>}
-      >
-        <p className="amcModalLabel">Now Showing at AMC</p>
-        <Movies movies={amcMovies} currentTab={Constants.TAB_AMC} updateMovieCard={updateMovieCard} />
-      </Modal>
-    </div>
+          <Movies movies={movies} currentTab={currentTab} updateMovieCard={updateMovieCard}></Movies>
+
+          <Modal
+            open={displayAmcModal}
+            onClose={closeAmcModal}
+            classNames={{
+              overlay: 'amcOverlay',
+              modal: 'amcModal',
+            }}
+            closeIcon={<p className="closeModalBtn">close</p>}
+          >
+            <p className="amcModalLabel">Now Showing at AMC</p>
+            <Movies movies={amcMovies} currentTab={Constants.TAB_AMC} updateMovieCard={updateMovieCard} />
+          </Modal>
+        </div>
+      }
+    </>
   );
 }
 

@@ -84,3 +84,21 @@ body {
 ::-webkit-scrollbar {
     display: none;
 }
+
+.pageLoadRing {
+    top: 50%;
+    left: 50%;
+    transform: translate(-50% , -50%);
+    position: absolute;
+
+    span {
+        display: inline-block;
+        box-sizing: border-box;
+        width: 100px;
+        height: 100px;
+        border: 8px solid #fff;
+        border-radius: 50%;
+        animation: lds-ring .8s cubic-bezier(0.5, 0, 0.5, 1) infinite;
+        border-color: #6dc9a5 transparent transparent transparent;
+    }
+}
