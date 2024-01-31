@@ -16,10 +16,6 @@
         pointer-events: none;
     }
 
-    .youtubeIcon {
-        display: none;
-    }
-
     .moviePoster {
         width: 100%;
     }
@@ -146,6 +142,15 @@
         position: absolute;
         animation: .1s slideDown 0s forwards;
     }
+
+    .youtubeIcon {
+        animation: .3s slideAway 0s forwards;
+        display: none;
+        position: absolute;
+        left: 0;
+        width: 80%;
+        margin-left: 7%;
+    }
 }
 
 .extraView {
@@ -246,6 +251,22 @@
 
         100% {
             top: initial;
+        }
+    }
+
+    @keyframes slideAway {
+        0% {
+            display: inline-block;
+            top: 25%;
+        }
+
+        80% {
+            top: 80%;
+            opacity: 0%;
+        }
+
+        90% {
+            display: none;
         }
     }
 
