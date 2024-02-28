@@ -21,8 +21,10 @@ class MovieController extends Controller
 
     private MovieService $movieService;
 
-    public function __construct(MovieService $movieService)
+    public function __construct(Request $request, MovieService $movieService)
     {
+        parent::__construct($request);
+
         $this->movieService = $movieService;
     }
 
@@ -115,7 +117,9 @@ class MovieController extends Controller
             $movie->watched_date = date("Y-m-d H:i:s");
         }
 
-        $movie->save();
+        if ($this->loggedIn) {
+            $movie->save();
+        }
 
         return response()->json([
             'message' => 'Movie added.',
@@ -147,7 +151,9 @@ class MovieController extends Controller
                     break;
             }
 
-            $movie->save();
+            if ($this->loggedIn) {
+                $movie->save();
+            }
 
             // Display clean data after save
             $movie->watched_date = date("M j, Y", strtotime($movie->watched_date));
@@ -168,7 +174,10 @@ class MovieController extends Controller
     {
         if (Movie::where('id', $id)->exists()) {
             $movie = Movie::find($id);
-            $movie->delete();
+
+            if ($this->loggedIn) {
+                $movie->delete();
+            }
 
             return response()->json([
                 'message' => 'Movie deleted.',
@@ -199,7 +208,10 @@ class MovieController extends Controller
 
         foreach ($movies as $movie) {
             $movie = $this->movieService->getRefreshedMovieData($movie);
-            $movie->save();
+
+            if ($this->loggedIn) {
+                $movie->save();
+            }
         }
     }
 }

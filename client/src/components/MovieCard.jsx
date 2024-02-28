@@ -4,16 +4,16 @@ import Settings from './Settings';
 import Constants from "../Constants";
 import { useState, useEffect } from "react";
 
-const MovieCard = ({ movie, currentTab, isLoading, updateMovieCard }) => {
+const MovieCard = ({ movie, currentTab, isLoading, updateMovieCard, token }) => {
 
     const [displayExtraView, setDisplayExtraView] = useState(false);
 
-    useEffect(() => { 
+    useEffect(() => {
         setDisplayExtraView(false)
     }, [movie])
 
     const toggleExtraView = () => {
-        setDisplayExtraView(!displayExtraView); 
+        setDisplayExtraView(!displayExtraView);
     }
 
     const getInfoSection = () => {
@@ -40,7 +40,7 @@ const MovieCard = ({ movie, currentTab, isLoading, updateMovieCard }) => {
                                 : ""
             }
 
-            <div class='expandableSection'>
+            <div className='expandableSection'>
                 <div className="scoresRow">
                     {(movie.tomato || movie.imdb) &&
                         <>
@@ -84,9 +84,9 @@ const MovieCard = ({ movie, currentTab, isLoading, updateMovieCard }) => {
                 <div className="titleRow">
                     <a className="movieTitle" target="_blank" rel="noreferrer" href={'https://www.google.com/search?q=' + movie.title}>
                         {movie.title}
-                        <i class="fa fa-link"></i>
+                        <i className="fa fa-link"></i>
                     </a>
-                    <Settings movie={movie} currentTab={currentTab} updateMovieCard={updateMovieCard}></Settings>
+                    <Settings movie={movie} currentTab={currentTab} updateMovieCard={updateMovieCard} token={token}></Settings>
                 </div>
 
                 {getInfoSection()}

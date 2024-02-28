@@ -19,8 +19,10 @@ class AmcDataController extends Controller
 
     private MovieService $movieService;
 
-    public function __construct(MovieService $movieService)
+    public function __construct(Request $request, MovieService $movieService)
     {
+        parent::__construct($request);
+
         $this->movieService = $movieService;
     }
 
@@ -133,7 +135,10 @@ class AmcDataController extends Controller
         if (AmcData::where('id', $id)->exists()) {
             $amcData = AmcData::find($id);
             $amcData->added = true;
-            $amcData->save();
+
+            if ($this->loggedIn) {
+                $amcData->save();
+            }
 
             $amcDataArray = $amcData->toArray();
             $amcDataArray['search_term'] = $amcDataArray['amc_title'];
@@ -143,7 +148,10 @@ class AmcDataController extends Controller
             unset($amcDataArray['amc_title'], $amcDataArray['added']);
 
             $movie->fill($amcDataArray);
-            $movie->save();
+
+            if ($this->loggedIn) {
+                $movie->save();
+            }
 
             return response()->json([
                 'message' => 'AMC movie added.',

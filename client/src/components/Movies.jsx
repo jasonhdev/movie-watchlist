@@ -3,7 +3,7 @@ import InfiniteScroll from 'react-infinite-scroll-component';
 import { useState, useEffect } from "react";
 import Constants from "../Constants";
 
-const Movies = ({ movies, currentTab, updateMovieCard }) => {
+const Movies = ({ movies, currentTab, updateMovieCard, token }) => {
 
     const DISPLAY_INCREMENT_COUNT = 10;
 
@@ -41,6 +41,7 @@ const Movies = ({ movies, currentTab, updateMovieCard }) => {
                                 currentTab={currentTab}
                                 isLoading={movie.isLoading ?? false}
                                 updateMovieCard={updateMovieCard}
+                                token={token}
                             />
                         );
                     })}
