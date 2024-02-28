@@ -88,7 +88,7 @@ body {
 .pageLoadRing {
     top: 50%;
     left: 50%;
-    transform: translate(-50% , -50%);
+    transform: translate(-50%, -50%);
     position: absolute;
 
     span {
@@ -100,5 +100,42 @@ body {
         border-radius: 50%;
         animation: lds-ring .8s cubic-bezier(0.5, 0, 0.5, 1) infinite;
         border-color: #6dc9a5 transparent transparent transparent;
+    }
+}
+
+.previewDisclaimer {
+    color: white;
+    background-color: rgb(255, 86, 86);
+    position: fixed;
+    z-index: 1;
+    width: 100%;
+
+    * {
+        display: inline-block;
+    }
+
+    p {
+        padding: 5px 20px;
+        margin: 0;
+        width: 80%;
+    }
+
+    a {
+        color: white;
+
+        &:hover {
+            color: #7a1a9c;
+        }
+    }
+
+    button {
+        position: absolute;
+        color: white;
+        font-size: 18px;
+        right: 0;
+        margin-right: 5px;
+        padding-left: 20px;
+        border: none;
+        background: none;
     }
 }

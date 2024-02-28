@@ -14,6 +14,8 @@ function App() {
   const [isLoaded, setIsLoaded] = useState(false);
   const [displayAmcModal, setDisplayAmcModal] = useState(false);
   const searchInputRef = useRef();
+  const [token, setToken] = useState(null);
+  const [showPreviewDisclaimer, setShowPreviewDisclaimer] = useState(true);
 
   // On page load
   useEffect(() => {
@@ -33,10 +35,20 @@ function App() {
       setIsLoaded(true);
     }
 
-    loadMovies();
-
     // Set focus on search input anytime key is pressed
     document.addEventListener("keydown", () => { searchInputRef.current.focus() }, true);
+
+    if (document.cookie) {
+      let cookieMatch = document.cookie.match('type=(.*)');
+
+      if (cookieMatch && cookieMatch[1]) {
+        setToken(cookieMatch[1])
+        setShowPreviewDisclaimer(false);
+      }
+    }
+
+    loadMovies();
+
   }, [])
 
   const handleTabChange = async (tab) => {
@@ -59,7 +71,10 @@ function App() {
 
       await fetch(process.env.REACT_APP_API_URL + '/movie/create', {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": "Bearer " + token
+        },
         body: JSON.stringify({
           "list": currentTab,
           "searchTerm": search
@@ -170,19 +185,29 @@ function App() {
 
   return (
     <>
+      {showPreviewDisclaimer &&
+        <span className="previewDisclaimer">
+          <p>Preview environment only. <a href="https://pizzachicken.xyz/login">Log in</a> to have changes saved.</p>
+          <button onClick={() => { setShowPreviewDisclaimer(false) }}>x</button>
+        </span>
+      }
+
       {!isLoaded &&
         <div className="pageLoadRing"><span></span></div>
       }
 
       {isLoaded === true &&
         <div className="container">
+
+
+
           <Header handleTabChange={handleTabChange} handleSearchInput={handleSearchInput} currentTab={currentTab} searchInputRef={searchInputRef}></Header>
 
           <div className="amcBtnContainer">
             <button onClick={openAmcModal}>Showings at AMC</button>
           </div>
 
-          <Movies movies={movies} currentTab={currentTab} updateMovieCard={updateMovieCard}></Movies>
+          <Movies movies={movies} currentTab={currentTab} updateMovieCard={updateMovieCard} token={token} />
 
           <Modal
             open={displayAmcModal}
@@ -194,7 +219,7 @@ function App() {
             closeIcon={<p className="closeModalBtn">close</p>}
           >
             <p className="amcModalLabel">Now Showing at AMC</p>
-            <Movies movies={amcMovies} currentTab={Constants.TAB_AMC} updateMovieCard={updateMovieCard} />
+            <Movies movies={amcMovies} currentTab={Constants.TAB_AMC} updateMovieCard={updateMovieCard} token={token} />
           </Modal>
         </div>
       }

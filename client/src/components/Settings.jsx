@@ -1,12 +1,15 @@
 import { useState } from "react";
 import Constants from "../Constants"
 
-const Settings = ({ movie, currentTab, updateMovieCard }) => {
+const Settings = ({ movie, currentTab, updateMovieCard, token }) => {
 
     const UPDATE_URL = process.env.REACT_APP_API_URL + '/movie/update/' + movie.id;
     const updateRequestOptions = {
         method: "PUT",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+            "Content-Type": "application/json",
+            "Authorization": "Bearer " + token
+        },
     }
 
     const toggleShowSettings = () => {
@@ -83,7 +86,7 @@ const Settings = ({ movie, currentTab, updateMovieCard }) => {
     }
 
     const handleAmcMoveAction = () => {
-        fetch(process.env.REACT_APP_API_URL + '/amc/create/' + movie.id);
+        fetch(process.env.REACT_APP_API_URL + '/amc/create/' + movie.id, updateRequestOptions);
 
         movie.amc = 1;
 
