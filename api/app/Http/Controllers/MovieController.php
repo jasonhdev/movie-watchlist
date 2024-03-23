@@ -208,10 +208,7 @@ class MovieController extends Controller
 
         foreach ($movies as $movie) {
             $movie = $this->movieService->getRefreshedMovieData($movie);
-
-            if ($this->loggedIn) {
-                $movie->save();
-            }
+            $movie->save();
         }
     }
 }
