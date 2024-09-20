@@ -1,14 +1,12 @@
-#xxxxxxxxxx!C:/Program Files/Python312/
-
 import requests
 from bs4 import BeautifulSoup
 import re
 import sys
 import json
+from datetime import datetime
 
-headers = ""
-subscriptions = ["Amazon", "Netflix", "Hulu", "Disney", "Play"]
-image = None
+HEADERS = {'User-agent': 'Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/113.0.0.0 Safari/537.36'}
+SUBSCRIPTIONS = ["Amazon", "Netflix", "Hulu", "Disneyplus"] #"Play"
 
 movie = {
     "title": None,
@@ -22,293 +20,151 @@ movie = {
     "genre": None,
     "runtime": None,
     "services": None,
-    "torrent": None,
-    "releaseDate" : None,
-    "watched": 0
+    "releaseDate": None,
 }
 
-#Image/poster
-def getImage():
-    global image, headers, search
-
-    if search[0:4] == "http":
-        searchUrl = search
-    else:
-        searchUrl = "https://www.google.com/search?q=" + search + " film wikipedia"
+def get_image(search):
+    # Fetch movie image from Wikipedia, find matching wiki page first
+    search_url = search if search.startswith("http") else f"https://www.google.com/search?q={search} film wikipedia"
+    response = requests.get(search_url, headers=HEADERS)
+    content = BeautifulSoup(response.content, 'lxml')
     
-    result = requests.get(searchUrl, headers=headers)
-    content = BeautifulSoup(result.content, 'lxml')
-
-    wikiLink = content.find("a", href=re.compile("https://en.wikipedia.org/"))['href']
-
-    result = requests.get(wikiLink, headers=headers)
-    content = BeautifulSoup(result.content, 'lxml')
-
-    image = content.find("td", {"class": "infobox-image"}).find("img")['src']
-
-def getMovieInfo(search):
-
-    title = None
-    description = None
-    tomato = None
-    imdb = None
-    trailer = None
-    rating = None
-    year = None
-    genre = None
-    runtime = None
-    services = None
-    releaseDate = None
-
-    global headers
-
-    # headers = {'User-agent': 'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:52.0) Gecko/20100101 Firefox/52.0'}
-    # headers = {'User-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/71.0.3578.98 Safari/537.36'}
-    headers = {'User-agent': 'Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/113.0.0.0 Safari/537.36'}
-
+    wiki_link = content.find("a", href=re.compile("https://en.wikipedia.org/"))['href']
+    response = requests.get(wiki_link, headers=HEADERS)
+    content = BeautifulSoup(response.content, 'lxml')
     
-    if search[0:4] == "http":
-        searchUrl = search
-    else:
-        searchUrl = "https://www.google.com/search?q=" + search + ""
-    result = requests.get(searchUrl, headers=headers)
-    content = BeautifulSoup(result.content, 'lxml')
+    imageElement = content.find("td", {"class": "infobox-image"})
+    if imageElement:
+        return imageElement.find("img")['src']
 
-#Account for movie series where explicit movie required
+def get_movie_info(search):
+    # Main content from Google search page result for scraping
+    searchUrl = search if search.startswith("http") else f"https://www.google.com/search?q={search}"
+    response = requests.get(searchUrl, headers=HEADERS)
+    content = BeautifulSoup(response.content, 'lxml')
+    
+    # Check if movie is a film series
     if content.find(attrs={"data-attrid": "subtitle"}, string="Film series"):
-        result = requests.get("https://www.google.com/search?q=" + search + " 1 info", headers=headers)
-        content = BeautifulSoup(result.content, 'lxml')
+        response = requests.get("https://www.google.com/search?q={search} 1 info", headers=HEADERS)
+        content = BeautifulSoup(response.content, 'lxml')
 
-    complimentaryDiv = content.findAll("div", attrs={"role": "complementary"})
-
-    for aboutDiv in complimentaryDiv:
-        if description is None or (imdb is None and tomato is None) or releaseDate is None:
-            try:
-                try:
-                    description = aboutDiv.find("div", attrs={'data-attrid' : 'description'}).findChildren("span")[0].text
-                except:
-                    pass
-                try:
-                    imdb = aboutDiv.find("span", attrs={"title": "IMDb"}).previous
-                except:
-                    pass
-                try:
-                    tomato = aboutDiv.find("span", attrs={"title": "Rotten Tomatoes"}).previous
-
-                    if "·" in tomato:
-                        tomato = aboutDiv.find("span", attrs={"title": "Rotten Tomatoes"}).previous.parent.previous
-                except:
-                    pass
-                try:
-                    trailer = aboutDiv.find("a", href=re.compile("https://www.youtube.com/"))['href']
-                except:
-                    pass
-                try:
-                    releaseDate = content.find(attrs={"data-attrid": "kc:/film/film:theatrical region aware release date"})
-
-                    if not releaseDate:
-                        releaseDate = content.find(attrs={"data-attrid": "kc:/film/film:release date"})
-
-                    releaseDate = releaseDate.text
-                    releaseDate = re.sub(r"\((.*?)\)", "", releaseDate)
-                    releaseDate = releaseDate.replace("Release date:", "")
-                    releaseDate = releaseDate.replace("Initial release: ", "")
-                    releaseDate = releaseDate.strip()
-                except:
-                    pass
-            except:
-                pass
-
-# Direct search, maybe move into its own functions
-    if not complimentaryDiv:
-        if description is None or (imdb is None and tomato is None) or releaseDate is None:
-            try:
-                try:
-                    reviewsDiv = content.find('div', {'data-attrid': 'kc:/film/film:reviews'})
-                    
-                    if not reviewsDiv:
-                        reviewsDiv = content.find('div', {'data-attrid': 'kc:/tv/tv_program:reviews'})
-                except:
-                    pass
-                try:
-                    imdb = reviewsDiv.find("span", attrs={"title": "IMDb"}).previous
-                except:
-                    pass
-                try:
-                    tomato = reviewsDiv.find("span", attrs={"title": "Rotten Tomatoes"}).previous
-                except:
-                    pass
-                try:
-                    description = content.find("div", attrs={'data-attrid' : 'description'}).findChildren("span")[0].text
-                except:
-                    pass
-                try:
-                    trailer = content.find("a", href=re.compile("https://www.youtube.com/"), attrs={'data-attrid' : 'title_link'})
-            
-                    if not trailer:
-                        trailer = content.find("a", href=re.compile("https://www.youtube.com/"))
-
-                    trailer = trailer['href']
-
-                except:
-                    pass
-                try:
-                    releaseDate = content.find(attrs={"data-attrid": "kc:/film/film:theatrical region aware release date"})
-
-                    if not releaseDate:
-                        releaseDate = content.find(attrs={"data-attrid": "kc:/film/film:release date"})
-
-                    releaseDate = releaseDate.text
-                    releaseDate = releaseDate.replace(" (USA)", "")
-                    releaseDate = releaseDate.replace("Release date: ", "")
-                    releaseDate = releaseDate.replace("Initial release: ", "")
-                except:
-                    pass
-            except:
-                pass
-
-    try:
-        title = content.find(attrs={"data-attrid": "title"}).text
-        info = content.find(attrs={"data-attrid": "subtitle"}).text
-        info = info.split("‧")
-
-        infoCleaned = []
-        for x in range(0, len(info)):
-            if x == 0:
-                info1 = info[x].split()
-                if info1[0] == 'PG' or info1[0] == 'PG-13' or info1[0] == 'R' or info1[0] == 'Not Rated' or info1[0] == 'N/A':
-                    for info11 in info1:
-                        infoCleaned.append(info11.strip())
-                else:
-                    infoCleaned.append(info[x].strip())
-            else:
-                trimmed = info[x].strip()
-                
-                if trimmed != ",":
-                    infoCleaned.append(trimmed)
-
-        info = infoCleaned
-
-        x = 0
-        if info[x] == 'PG' or info[x] == 'PG-13' or info[x] == 'R' or info[x] == 'Not Rated' or info[x] == 'N/A':
-            rating = info[x]
-            x = x + 1
-
-        if len(info[x]) == 4 and info[x].isnumeric():
-            year = info[x]
-            x = x + 1
-
-        genre = info[x]
-        x = x + 1
-
-        runtime = info[x]
-        x = x + 1
-    except:
-        pass
-
-    try:
-        getImage()
-    except:
-        pass
-
-#Streaming services
-    serviceDiv = content.find("div", attrs={"data-attrid" : "kc:/film/film:media_actions_wholepage"})
-
-    if not serviceDiv:
-        serviceDiv = content.find("div", attrs={"data-attrid" : "action:watch_film"})
-
-    if not serviceDiv:
-        serviceDiv = content.find("div", attrs={"data-attrid" : "kc:/tv/tv_program:media_actions_wholepage"})
-
-    if serviceDiv:
-        subscription = serviceDiv.find("div", string="Subscription")
-        premiumSubscription = serviceDiv.find("div", string="Premium subscription")
-        free = serviceDiv.find("div", string="Free")
-
-        services = list()
-        
-        if subscription or premiumSubscription or free:
-            service = serviceDiv.find("a")['href']
-            service = service.replace("https://", "")
-            service = service.replace("http://", "")
-            service = service.replace("www.", "")
-            service = service[0:service.index(".")].capitalize()
-
-            if subscription and service in subscriptions:
-                if service == "Amazon":
-                    service = "Amazon Prime"
-
-                if service == "Play":
-                    service = "HBO Max"
-                
-            if premiumSubscription:
-                service = service + " (Premium)"
-
-            services.append(service)
-
-            if free:
-                services.append(service)
-
-        services = list(dict.fromkeys(services))
-        services = ",".join(services)
-
-    movie["title"] = title
-    movie["description"] = description
-    movie["tomato"] = tomato
-    movie["imdb"] = imdb
-    movie["image"] = image
-    movie["trailer"] = trailer
-    movie["rating"] = rating
-    movie["year"] = year
-    movie["genre"] = genre
-    movie["runtime"] = runtime
-    movie["releaseDate"] = releaseDate
-    movie["services"] = services
-
-    if year:
-         yts = "https://yts.mx/movies/" + title.lower().replace(" ", "-") + "-" + year
-         code = requests.get(yts, headers=headers).status_code 
-         if code == 200:
-            movie["torrent"] = yts
-
-    if movie['title'] and movie['title'] != "See results about":
+    movie['title'] = get_title(content)
+    movie['description'] = get_description(content)
+    movie['imdb'], movie['tomato'] = get_reviews(content)
+    movie["releaseDate"] = get_release_date(content)
+    movie['rating'], movie['year'], movie['genre'] , movie['runtime'] = get_meta_info(content)
+    movie['trailer'] = get_trailer(content)
+    movie['services'] = get_services(content)
+    movie['image'] = get_image(search)
+    
+    if movie["title"] != "See results about":
         return json.dumps(movie)
 
-def searchWrapper(search, type = ""):
-    try:
-        if "stripMeta" in type:
-            movieInfo = getMovieInfo(search + " ")
-        else:
-            movieInfo = getMovieInfo(search + " " +  type)
+def get_title(content):
+    titleElement = content.find(attrs={"data-attrid": "title"})
+    return titleElement.text if titleElement else None 
 
-        if movieInfo == None:
-            raise Exception("No data found")
-        else:
-            return json.dumps(movie) 
-    except:
-        if type == "":
-            type = "movie"
-        elif type == "movie":
-            type = "film"
-        elif type == "film":
-            type = "show"
-        elif type == "show":
-            type = "documentary"
-        elif type == "documentary":
-            type = "stripMeta"
-            search = search.split('-')[0]
-            search = search.split('(')[0]
-            search = search.strip() + " movie"
-        elif type == "stripMeta":
-            type = "stripMeta2"
-            search = search.strip(" movie")
-            search = search + " 2023"
-        elif type == "stripMeta2":
-            type = "not found"
-        elif type == "not found":
-            return
+def get_description(content):
+    descriptionElement = content.find("div", attrs={'data-attrid': 'description'})
+    if descriptionElement:
+        return descriptionElement.findChildren("span")[0].text
+
+def get_reviews(content):
+    imdb, tomato = None, None
+    
+    reviewsElement = content.find('div', {'data-attrid': 'kc:/film/film:reviews'}) or content.find('div', {'data-attrid': 'kc:/tv/tv_program:reviews'})
+    
+    if reviewsElement:
+        imdbElement = reviewsElement.find("span", attrs={"title": "IMDb"})
+        if imdbElement:
+            imdb = imdbElement.previous
+            if "·" in imdb:
+                imdb = imdbElement.previous.parent.previous
         
-        return searchWrapper(search, type)
+        tomatoElement = reviewsElement.find("span", attrs={"title": "Rotten Tomatoes"})
+        if tomatoElement:
+            tomato = tomatoElement.previous
+            if "·" in tomato:
+                tomato = tomatoElement.previous.parent.previous
+        
+    return imdb, tomato
 
+def get_trailer(content):
+    trailer_link = content.find("a", href=re.compile("https://www.youtube.com/"), attrs={'data-attrid': 'title_link'}) or content.find("a", href=re.compile("https://www.youtube.com/"))
+    if trailer_link:
+        return trailer_link['href']
+
+def get_meta_info(content):
+    # Google result ordering: Rating, Year, Genre, Runtime
+    rating, year, genre, runtime = None, None, None, None
+    
+    meta_info_element = content.find(attrs={"data-attrid": "subtitle"})
+    if meta_info_element:
+        meta_info = meta_info_element.text.split("‧")
+        meta_info = [part.strip() for part in meta_info if part.strip() != ","]
+    
+        for info in meta_info:
+            if not rating:
+                matching_text = next((val for val in ['PG-13', 'PG', 'Not Rated', 'N/A', 'R', 'G'] if val in info), None)
+                if matching_text:
+                    rating = matching_text
+                    info = info.replace(matching_text, '').strip()
+
+            if not year and len(info) == 4 and info.isnumeric():
+                year = info
+                continue
+                
+            # Searching for text matching "season(s)", "h", and "m"
+            possible_runtime = re.search(r'(\d+\s*season[s]?)|((\d+)\s*h(?:\s*(\d+)\s*m)?)', info)
+            if possible_runtime:
+                matched_value = possible_runtime.group(0)
+                runtime = matched_value
+                continue
+            
+            if not genre:
+                genre = info
+    
+    return rating, year, genre, runtime
+    
+def get_release_date(content):
+    releaseDateElement = content.find(attrs={"data-attrid": "kc:/film/film:theatrical region aware release date"}) or content.find(attrs={"data-attrid": "kc:/film/film:release date"}) 
+    if releaseDateElement:
+        return re.sub(r"\((.*?)\)", "", releaseDateElement.text).replace("Release date:", "").replace("Initial release:", "").strip()
+
+def get_services(content):
+    serviceElement = content.find("div", attrs={"data-attrid": "kc:/film/film:media_actions_wholepage"}) or content.find("div", attrs={"data-attrid": "action:watch_film"}) or content.find("div", attrs={"data-attrid": "kc:/tv/tv_program:media_actions_wholepage"}) or None
+    
+    if serviceElement:
+        service_url = serviceElement.find("a")
+        if service_url:
+            service_href = service_url['href']
+            service_name = re.sub(r'https?://(www\.)?', '', service_href).split('.')[0].capitalize()
+            if service_name in SUBSCRIPTIONS:
+                
+                if service_name == "Disneyplus":
+                    service_name = "Disney+"
+                    
+                if service_name == "Amazon":
+                    service_name = "Amazon Prime"
+                
+                if service_name == "Play":
+                    service_name = "HBO Max"
+                    
+                return service_name
+    return ""
+
+def search_wrapper(search):
+    media_types = ["movie", "film", "show", "documentary", "anime", str(datetime.now().year)]
+    
+    for media in media_types:
+        try:
+            movie_info = get_movie_info(f"{search} {media}")
+            if movie_info:
+                break
+        except Exception as e:
+            pass
+        
+    return movie_info if movie_info else None
+    
 search = sys.argv[1]
-print(searchWrapper(search))
+print(search_wrapper(search))
