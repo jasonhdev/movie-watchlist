@@ -4,24 +4,25 @@ import re
 import sys
 import json
 from datetime import datetime
+from dataclasses import dataclass, field
 
 HEADERS = {'User-agent': 'Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/113.0.0.0 Safari/537.36'}
-SUBSCRIPTIONS = ["Amazon", "Netflix", "Hulu", "Disneyplus"] #"Play"
+ACTIVE_SUBSCRIPTIONS = ["Amazon", "Netflix", "Hulu", "Disneyplus"] #"Play"
 
-movie = {
-    "title": None,
-    "description": None,
-    "tomato": None,
-    "imdb": None,
-    "image": None,
-    "trailer": None,
-    "rating": None,
-    "year": None,
-    "genre": None,
-    "runtime": None,
-    "services": None,
-    "releaseDate": None,
-}
+@dataclass
+class Movie:
+    title: str = ""
+    description: str = ""
+    tomato: str = ""
+    imdb: str = ""
+    image: str = ""
+    trailer: str = ""
+    rating: str = ""
+    year: str = ""
+    genre: str = ""
+    runtime: str = ""
+    services: str = ""
+    releaseDate: str = ""
 
 def get_image(search):
     # Fetch movie image from Wikipedia, find matching wiki page first
@@ -48,16 +49,17 @@ def get_movie_info(search):
         response = requests.get("https://www.google.com/search?q={search} 1 info", headers=HEADERS)
         content = BeautifulSoup(response.content, 'lxml')
 
-    movie['title'] = get_title(content)
-    movie['description'] = get_description(content)
-    movie['imdb'], movie['tomato'] = get_reviews(content)
-    movie["releaseDate"] = get_release_date(content)
-    movie['rating'], movie['year'], movie['genre'] , movie['runtime'] = get_meta_info(content)
-    movie['trailer'] = get_trailer(content)
-    movie['services'] = get_services(content)
-    movie['image'] = get_image(search)
+    movie = Movie()
+    movie.title = get_title(content)
+    movie.description = get_description(content)
+    movie.imdb, movie.tomato = get_reviews(content)
+    movie.release_date = get_release_date(content)
+    movie.rating, movie.year, movie.genre, movie.runtime = get_meta_info(content)
+    movie.trailer = get_trailer(content)
+    movie.services = get_services(content)
+    movie.image = get_image(search)
     
-    if movie["title"] != "See results about":
+    if movie.title != "See results about":
         return json.dumps(movie)
 
 def get_title(content):
@@ -132,6 +134,12 @@ def get_release_date(content):
         return re.sub(r"\((.*?)\)", "", releaseDateElement.text).replace("Release date:", "").replace("Initial release:", "").strip()
 
 def get_services(content):
+    service_map = {
+        "Disneyplus": "Disney+",
+        "Amazon": "Amazon Prime",
+        "Play": "HBO Max"
+    }
+    
     serviceElement = content.find("div", attrs={"data-attrid": "kc:/film/film:media_actions_wholepage"}) or content.find("div", attrs={"data-attrid": "action:watch_film"}) or content.find("div", attrs={"data-attrid": "kc:/tv/tv_program:media_actions_wholepage"}) or None
     
     if serviceElement:
@@ -139,23 +147,15 @@ def get_services(content):
         if service_url:
             service_href = service_url['href']
             service_name = re.sub(r'https?://(www\.)?', '', service_href).split('.')[0].capitalize()
-            if service_name in SUBSCRIPTIONS:
+            if service_name in ACTIVE_SUBSCRIPTIONS:
+                service_name = service_map.get(service_name, service_name)
                 
-                if service_name == "Disneyplus":
-                    service_name = "Disney+"
-                    
-                if service_name == "Amazon":
-                    service_name = "Amazon Prime"
-                
-                if service_name == "Play":
-                    service_name = "HBO Max"
-                    
-                return service_name
-    return ""
+    return service_name if service_name in ACTIVE_SUBSCRIPTIONS else ""
 
 def search_wrapper(search):
     media_types = ["movie", "film", "show", "documentary", "anime", str(datetime.now().year)]
     
+    movie_info = None
     for media in media_types:
         try:
             movie_info = get_movie_info(f"{search} {media}")
@@ -164,7 +164,8 @@ def search_wrapper(search):
         except Exception as e:
             pass
         
-    return movie_info if movie_info else None
+    return movie_info
     
-search = sys.argv[1]
+test = "inception"
+search = sys.argv[1] if len(sys.argv) > 1 else test
 print(search_wrapper(search))
