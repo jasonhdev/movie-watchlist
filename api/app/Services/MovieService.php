@@ -13,7 +13,7 @@ class MovieService
     public function searchMovie(string $searchTerm): ?array
     {
         $process = new Process([env("PYTHON_PATH"), resource_path() . "/python/movieScraper.py", $searchTerm]);
-
+        $process->setWorkingDirectory(resource_path() . "/python");
         $process->run();
 
         if (!$process->isSuccessful()) {

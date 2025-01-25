@@ -1,13 +1,57 @@
-import requests
-from bs4 import BeautifulSoup
-import re
-import sys
-import json
+from selenium import webdriver
+from selenium.webdriver.common.by import By
+from selenium.webdriver.chrome.service import Service
+from selenium.webdriver.chrome.options import Options
+import time
+from dataclasses import dataclass, asdict
 from datetime import datetime
-from dataclasses import dataclass, field
+import os
+import sys
+from dotenv import load_dotenv
+import re
+import json
 
-HEADERS = {'User-agent': 'Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/113.0.0.0 Safari/537.36'}
-ACTIVE_SUBSCRIPTIONS = ["Amazon", "Netflix", "Hulu", "Disneyplus"] #"Play"
+load_dotenv(".env/.env")
+chromedriver_path = os.getenv("CHROMEDRIVER_PATH")
+
+options = Options()
+options.add_argument("--headless") 
+options.add_argument("--disable-gpu")
+options.add_argument("--no-sandbox")
+options.add_argument("--disable-blink-features=AutomationControlled")
+options.add_argument("--disable-usb-discovery") 
+options.add_argument("user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/132.0.0.0 Safari/537.36")
+
+service = Service(chromedriver_path)
+driver = webdriver.Chrome(service=service, options=options)
+
+ACTIVE_SUBSCRIPTIONS = [
+    "Amazon Prime", 
+    "Netflix",
+    "Hulu",
+    "Disney+",
+    "HBO Max"
+]
+
+MEDIA_TYPES = [
+    "movie", 
+    "film", 
+    "show", 
+    "documentary", 
+    "anime", 
+    str(datetime.now().year)
+]
+
+MOVIE_DETECT_KEYWORDS = [
+    "Release date",
+    "Director",
+    "Budget",
+    "Cinematography",
+    "Distributed by",
+    "Genre",
+    "Producers",
+    "Network",
+]
 
 @dataclass
 class Movie:
@@ -23,149 +67,208 @@ class Movie:
     runtime: str = ""
     services: str = ""
     releaseDate: str = ""
-
-def get_image(search):
-    # Fetch movie image from Wikipedia, find matching wiki page first
-    search_url = search if search.startswith("http") else f"https://www.google.com/search?q={search} film wikipedia"
-    response = requests.get(search_url, headers=HEADERS)
-    content = BeautifulSoup(response.content, 'lxml')
     
-    wiki_link = content.find("a", href=re.compile("https://en.wikipedia.org/"))['href']
-    response = requests.get(wiki_link, headers=HEADERS)
-    content = BeautifulSoup(response.content, 'lxml')
+    def to_json(self):
+        return json.dumps(asdict(self), indent=4)
     
-    imageElement = content.find("td", {"class": "infobox-image"})
-    if imageElement:
-        return imageElement.find("img")['src']
-
 def get_movie_info(search):
-    # Main content from Google search page result for scraping
-    searchUrl = search if search.startswith("http") else f"https://www.google.com/search?q={search}"
-    response = requests.get(searchUrl, headers=HEADERS)
-    content = BeautifulSoup(response.content, 'lxml')
-    
-    # Check if movie is a film series
-    if content.find(attrs={"data-attrid": "subtitle"}, string="Film series"):
-        response = requests.get("https://www.google.com/search?q={search} 1 info", headers=HEADERS)
-        content = BeautifulSoup(response.content, 'lxml')
-
-    movie = Movie()
-    movie.title = get_title(content)
-    movie.description = get_description(content)
-    movie.imdb, movie.tomato = get_reviews(content)
-    movie.release_date = get_release_date(content)
-    movie.rating, movie.year, movie.genre, movie.runtime = get_meta_info(content)
-    movie.trailer = get_trailer(content)
-    movie.services = get_services(content)
-    movie.image = get_image(search)
-    
-    if movie.title != "See results about":
-        return json.dumps(movie)
-
-def get_title(content):
-    titleElement = content.find(attrs={"data-attrid": "title"})
-    return titleElement.text if titleElement else None 
-
-def get_description(content):
-    descriptionElement = content.find("div", attrs={'data-attrid': 'description'})
-    if descriptionElement:
-        return descriptionElement.findChildren("span")[0].text
-
-def get_reviews(content):
-    imdb, tomato = None, None
-    
-    reviewsElement = content.find('div', {'data-attrid': 'kc:/film/film:reviews'}) or content.find('div', {'data-attrid': 'kc:/tv/tv_program:reviews'})
-    
-    if reviewsElement:
-        imdbElement = reviewsElement.find("span", attrs={"title": "IMDb"})
-        if imdbElement:
-            imdb = imdbElement.previous
-            if "·" in imdb:
-                imdb = imdbElement.previous.parent.previous
+    try:
+        set_driver_search_url(search)
         
-        tomatoElement = reviewsElement.find("span", attrs={"title": "Rotten Tomatoes"})
-        if tomatoElement:
-            tomato = tomatoElement.previous
-            if "·" in tomato:
-                tomato = tomatoElement.previous.parent.previous
+        movie = Movie()
+        movie.title = get_title()
+        movie.services = get_services()
+        movie.description = get_description() # Must be after get_services because of clicking issue
+        movie.imdb, movie.tomato = get_scores()
+        movie.releaseDate = get_release_date()
+        movie.rating, movie.year, movie.genre, movie.runtime = get_meta_info()
+        movie.trailer = get_trailer()
+        movie.image = get_poster()
+    except Exception as e:
+        # print(f"Error occurred: {e}")
+        pass
         
-    return imdb, tomato
+    finally:
+        driver.quit()
+        return movie.to_json()
+    
+def set_driver_search_url(search):
+    if search.startswith("http"):
+        searchUrl = search
+        driver.get(searchUrl)
+            
+    else:
+        searchUrl = f"https://www.google.com/search?q={search}"
+        driver.get(searchUrl)
+        
+        potential_movie = driver.find_elements(By.XPATH, " | ".join([f"//*[contains(text(), '{word}')]" for word in MOVIE_DETECT_KEYWORDS]))
+        time.sleep(1)
+        
+        if not potential_movie:
+            for media_type in MEDIA_TYPES:
+                searchUrl = f"https://www.google.com/search?q={search} {media_type}"
+                driver.get(searchUrl)
+                time.sleep(1)
+                
+                potential_movie = " | ".join([f"//*[contains(text(), '{word}')]" for word in MOVIE_DETECT_KEYWORDS])
+                if potential_movie:
+                    break
+    
+def get_title():
+    try:
+        title = driver.find_element(By.XPATH, "//div[@data-attrid='title']").text
 
-def get_trailer(content):
-    trailer_link = content.find("a", href=re.compile("https://www.youtube.com/"), attrs={'data-attrid': 'title_link'}) or content.find("a", href=re.compile("https://www.youtube.com/"))
-    if trailer_link:
-        return trailer_link['href']
+    except Exception as e:
+        # print(f"Error occurred: {e}")
+        title = ""
+        
+    return title
+    
+def get_description():
+    try:
+        description_div = driver.find_element(By.XPATH, "//div[@data-attrid='description' or @data-attrid='VisualDigestDescription']")
+        
+        try:
+            more_button = description_div.find_element(By.XPATH, ".//span[contains(@aria-label, 'More description')]")
+            more_button.click()
+        except Exception:
+            pass
 
-def get_meta_info(content):
+        description = description_div.text.replace("Description\n","")
+
+    except Exception as e:
+        # print(f"Error occurred: {e}")
+        description = ""
+        
+    return description
+    
+def get_scores():
+    try:
+        # IMDb Score
+        imdb_score = driver.find_element(By.XPATH, "//span[text()='IMDb' and @aria-hidden='true']/preceding-sibling::span").text
+        imdb_score = imdb_score.replace("IMDb", "").replace("/10", "").strip()
+
+    except Exception as e:
+        # print(f"Error occurred: {e}")
+        imdb_score = ""
+
+    try:
+        # Rotten Tomatoes Score
+        tomatoes_score = driver.find_element(By.XPATH, "//span[text()='Rotten Tomatoes' and @aria-hidden='true']/preceding-sibling::span").text
+        tomatoes_score = tomatoes_score.replace("Rotten Tomatoes", "").strip()
+
+    except Exception as e:
+        # print(f"Error occurred: {e}")
+        tomatoes_score = ""
+    
+    return imdb_score, tomatoes_score
+    
+def get_trailer():
+    try:
+        trailer_url = driver.find_element(By.XPATH, "//a[contains(@href, 'youtube.com')]").get_attribute("href")
+    except Exception as e:
+        # print(f"Error occurred: {e}")
+        trailer_url = ""
+    
+    return trailer_url
+
+def get_meta_info():
     # Google result ordering: Rating, Year, Genre, Runtime
-    rating, year, genre, runtime = None, None, None, None
+    rating, year, genre, runtime = "", "", "", ""
+    possible_ratings = ['PG-13', 'PG', 'Not Rated', 'N/A', 'R', 'G']
     
-    meta_info_element = content.find(attrs={"data-attrid": "subtitle"})
-    if meta_info_element:
-        meta_info = meta_info_element.text.split("‧")
+    try:
+        subtitle_element = driver.find_elements(By.XPATH, "//div[@data-attrid='subtitle']/span")
+        meta_info = " ".join([span.text for span in subtitle_element]).split("‧")
         meta_info = [part.strip() for part in meta_info if part.strip() != ","]
     
         for info in meta_info:
+            # Extract rating
             if not rating:
-                matching_text = next((val for val in ['PG-13', 'PG', 'Not Rated', 'N/A', 'R', 'G'] if val in info), None)
-                if matching_text:
-                    rating = matching_text
-                    info = info.replace(matching_text, '').strip()
+                rating = next((rating_value for rating_value in possible_ratings if rating_value in info), "").strip()
+                info = info.replace(rating, '').strip() if rating else info
 
+            # Match year to 4 digit integer
             if not year and len(info) == 4 and info.isnumeric():
                 year = info
                 continue
                 
-            # Searching for text matching "season(s)", "h", and "m"
-            possible_runtime = re.search(r'(\d+\s*season[s]?)|((\d+)\s*h(?:\s*(\d+)\s*m)?)', info)
-            if possible_runtime:
-                matched_value = possible_runtime.group(0)
-                runtime = matched_value
-                continue
+            # Match runtime (e.g. "2h 30m" or "2 seasons")
+            if not runtime:
+                runtime_match = re.search(r'(\d+\s*season[s]?)|((\d+)\s*h(?:\s*(\d+)\s*m)?)', info)
+                if runtime_match:
+                    runtime = runtime_match.group(0)
+                    continue
             
+            # Assign remaining value to genre
             if not genre:
                 genre = info
+                
+    except Exception as e:
+        # print(f"Error occurred: {e}")
+        pass
     
     return rating, year, genre, runtime
-    
-def get_release_date(content):
-    releaseDateElement = content.find(attrs={"data-attrid": "kc:/film/film:theatrical region aware release date"}) or content.find(attrs={"data-attrid": "kc:/film/film:release date"}) 
-    if releaseDateElement:
-        return re.sub(r"\((.*?)\)", "", releaseDateElement.text).replace("Release date:", "").replace("Initial release:", "").strip()
 
-def get_services(content):
-    service_map = {
-        "Disneyplus": "Disney+",
-        "Amazon": "Amazon Prime",
-        "Play": "HBO Max"
+def get_release_date():
+    try:
+        release_date = driver.find_element(By.XPATH, "//span[contains(text(), 'Release date')]/following-sibling::span").text
+        release_date = re.sub(r"\((.*?)\)", "", release_date).replace("Release date:", "").replace("Initial release:", "").strip()
+    
+    except Exception as e:
+        # print(f"Error occurred: {e}")
+        release_date = ""
+        
+    return release_date
+
+def get_services():
+    service_clean_name = {
+        "Amazon Prime Video": "Amazon Prime",
+        "Max": "HBO Max",
     }
-    
-    serviceElement = content.find("div", attrs={"data-attrid": "kc:/film/film:media_actions_wholepage"}) or content.find("div", attrs={"data-attrid": "action:watch_film"}) or content.find("div", attrs={"data-attrid": "kc:/tv/tv_program:media_actions_wholepage"}) or None
-    
-    if serviceElement:
-        service_url = serviceElement.find("a")
-        if service_url:
-            service_href = service_url['href']
-            service_name = re.sub(r'https?://(www\.)?', '', service_href).split('.')[0].capitalize()
-            if service_name in ACTIVE_SUBSCRIPTIONS:
-                service_name = service_map.get(service_name, service_name)
-                
-    return service_name if service_name in ACTIVE_SUBSCRIPTIONS else ""
 
-def search_wrapper(search):
-    media_types = ["movie", "film", "show", "documentary", "anime", str(datetime.now().year)]
+    available_service = ""
     
-    movie_info = None
-    for media in media_types:
+    try:
+        where_watch_span = driver.find_element(By.XPATH, "//span[contains(text(), 'Where to watch')]")
+        where_watch_span.click()
+        time.sleep(1)
+        
+        where_watch_section = where_watch_span.find_element(By.XPATH, "./../../../following-sibling::div")
+        where_watch_text = where_watch_section.text.split("\n")
+        
+        for i in range(len(where_watch_text) - 1):
+            service_name = where_watch_text[i]
+            if where_watch_text[i + 1] == "Subscription":
+                service_name = service_clean_name.get(service_name, service_name)
+
+                if service_name in ACTIVE_SUBSCRIPTIONS:
+                    available_service = service_name
+                    break
+                
+    except Exception as e:
+        # print(f"Error occurred: {e}")
+        pass
+        
+    return available_service
+
+def get_poster():
+    try:
         try:
-            movie_info = get_movie_info(f"{search} {media}")
-            if movie_info:
-                break
+            wiki_link = driver.find_element(By.XPATH, "//a[contains(@href, 'wikipedia.org')]")
+            wiki_link.click()
+            time.sleep(1)
         except Exception as e:
             pass
+
+        poster_url = driver.find_element(By.XPATH, "//a[@class='mw-file-description']/img").get_attribute('src')
+
+    except Exception as e:
+        # print(f"Error occurred: {e}")
+        poster_url = ""
         
-    return movie_info
-    
+    return poster_url
+
 test = "inception"
 search = sys.argv[1] if len(sys.argv) > 1 else test
-print(search_wrapper(search))
+print(get_movie_info(search))
