@@ -10,6 +10,7 @@ import re
 import json
 from dotenv import load_dotenv
 import time
+from typing import Optional
 import atexit
 
 load_dotenv(".env/.env")
@@ -59,18 +60,18 @@ MOVIE_DETECT_KEYWORDS = [
 
 @dataclass
 class Movie:
-    title: str = ""
-    description: str = ""
-    tomato: str = ""
-    imdb: str = ""
-    image: str = ""
-    trailer: str = ""
-    rating: str = ""
-    year: str = ""
-    genre: str = ""
-    runtime: str = ""
-    services: str = ""
-    releaseDate: str = ""
+    title: Optional[str] = None
+    description: Optional[str] = None
+    tomato: Optional[str] = None
+    imdb: Optional[str] = None
+    image: Optional[str] = None
+    trailer: Optional[str] = None
+    rating: Optional[str] = None
+    year: Optional[str] = None
+    genre: Optional[str] = None
+    runtime: Optional[str] = None
+    services: Optional[str] = None
+    releaseDate: Optional[str] = None
     
     def to_json(self):
         return json.dumps(asdict(self), indent=4)
@@ -123,7 +124,7 @@ def get_title():
 
     except Exception as e:
         print(f"Error occurred: {e}")
-        title = ""
+        return None
         
     return title
     
@@ -141,7 +142,7 @@ def get_description():
 
     except Exception as e:
         print(f"Error occurred: {e}")
-        description = ""
+        return None
         
     return description
     
@@ -149,11 +150,11 @@ def get_scores():
     try:
         # IMDb Score
         imdb_score = driver.find_element(By.XPATH, "//span[text()='IMDb' and @aria-hidden='true']/preceding-sibling::span").text
-        imdb_score = imdb_score.replace("IMDb", "").replace("/10", "").strip()
+        imdb_score = imdb_score.replace("IMDb", "").strip()
 
     except Exception as e:
         print(f"Error occurred: {e}")
-        imdb_score = ""
+        return None
 
     try:
         # Rotten Tomatoes Score
@@ -162,7 +163,7 @@ def get_scores():
 
     except Exception as e:
         print(f"Error occurred: {e}")
-        tomatoes_score = ""
+        return None
     
     return imdb_score, tomatoes_score
     
@@ -171,13 +172,13 @@ def get_trailer():
         trailer_url = driver.find_element(By.XPATH, "//a[contains(@href, 'youtube.com')]").get_attribute("href")
     except Exception as e:
         print(f"Error occurred: {e}")
-        trailer_url = ""
+        return None
     
     return trailer_url
 
 def get_meta_info():
     # Google result ordering: Rating, Year, Genre, Runtime
-    rating, year, genre, runtime = "", "", "", ""
+    rating, year, genre, runtime = None, None, None, None
     possible_ratings = ['PG-13', 'PG', 'Not Rated', 'N/A', 'R', 'G']
     
     try:
@@ -188,8 +189,10 @@ def get_meta_info():
         for info in meta_info:
             # Extract rating
             if not rating:
-                rating = next((rating_value for rating_value in possible_ratings if rating_value in info), "").strip()
-                info = info.replace(rating, '').strip() if rating else info
+                rating = next((rating_value for rating_value in possible_ratings if rating_value in info), None)
+                if rating:
+                    info = info.replace(rating, '').strip() if rating else info
+                    continue
 
             # Match year to 4 digit integer
             if not year and len(info) == 4 and info.isnumeric():
@@ -204,7 +207,7 @@ def get_meta_info():
                     continue
             
             # Assign remaining value to genre
-            if not genre:
+            if not genre and genre not in ["Film", "Movie"]:
                 genre = info
                 
     except Exception as e:
@@ -220,7 +223,7 @@ def get_release_date():
     
     except Exception as e:
         print(f"Error occurred: {e}")
-        release_date = ""
+        return None
         
     return release_date
 
@@ -230,7 +233,7 @@ def get_services():
         "Max": "HBO Max",
     }
 
-    available_service = ""
+    available_service = None
     
     try:
         where_watch_span = driver.find_element(By.XPATH, "//span[contains(text(), 'Where to watch')]")
@@ -264,11 +267,11 @@ def get_poster():
         except Exception as e:
             pass
 
-        poster_url = driver.find_element(By.XPATH, "//a[@class='mw-file-description']/img").get_attribute('src')
+        poster_url = driver.find_element(By.XPATH, "//td[@class='infobox-image']//a[@class='mw-file-description']/img").get_attribute('src')
 
     except Exception as e:
         print(f"Error occurred: {e}")
-        poster_url = ""
+        return None
         
     return poster_url
 
