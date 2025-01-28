@@ -35,7 +35,8 @@ ACTIVE_SUBSCRIPTIONS = [
     "Netflix",
     "Hulu",
     "Disney+",
-    "HBO Max"
+    "HBO Max",
+    "Crunchyroll",
 ]
 
 MEDIA_TYPES = [
@@ -43,7 +44,8 @@ MEDIA_TYPES = [
     "film", 
     "show", 
     "documentary", 
-    "anime", 
+    "anime",
+    "animated",
     str(datetime.now().year)
 ]
 
@@ -56,6 +58,8 @@ MOVIE_DETECT_KEYWORDS = [
     "Genre",
     "Producers",
     "Network",
+    "Rotten Tomatoes",
+    "IMDb"
 ]
 
 @dataclass
@@ -78,9 +82,10 @@ class Movie:
     
 def get_movie_info(search):
     try:
+        movie = Movie()
+        
         set_driver_search_url(search)
         
-        movie = Movie()
         movie.title = get_title()
         movie.services = get_services()
         movie.description = get_description() # Must be after get_services because of clicking issue
@@ -105,7 +110,7 @@ def set_driver_search_url(search):
         searchUrl = f"https://www.google.com/search?q={search}"
         driver.get(searchUrl)
         
-        potential_movie = driver.find_elements(By.XPATH, " | ".join([f"//*[contains(text(), '{word}')]" for word in MOVIE_DETECT_KEYWORDS]))
+        potential_movie = driver.find_elements(By.XPATH, " | ".join([f"//div[@role='complementary']//*[contains(text(), '{word}')]" for word in MOVIE_DETECT_KEYWORDS]))
         time.sleep(1)
         
         if not potential_movie:
@@ -113,10 +118,12 @@ def set_driver_search_url(search):
                 searchUrl = f"https://www.google.com/search?q={search} {media_type}"
                 driver.get(searchUrl)
                 time.sleep(1)
-                
-                potential_movie = " | ".join([f"//*[contains(text(), '{word}')]" for word in MOVIE_DETECT_KEYWORDS])
+                potential_movie = driver.find_elements(By.XPATH, " | ".join([f"//div[@role='complementary']//*[contains(text(), '{word}')]" for word in MOVIE_DETECT_KEYWORDS]))
                 if potential_movie:
                     break
+                
+        if not potential_movie:
+            raise Exception ("Search term not identified as a movie")
     
 def get_title():
     try:
@@ -151,11 +158,11 @@ def get_scores():
         # IMDb Score
         imdb_score = driver.find_element(By.XPATH, "//span[text()='IMDb' and @aria-hidden='true']/preceding-sibling::span").text
         imdb_score = imdb_score.replace("IMDb", "").strip()
-
+        print(imdb_score)
     except Exception as e:
         print(f"Error occurred: {e}")
-        return None
-
+        imdb_score = None
+        
     try:
         # Rotten Tomatoes Score
         tomatoes_score = driver.find_element(By.XPATH, "//span[text()='Rotten Tomatoes' and @aria-hidden='true']/preceding-sibling::span").text
@@ -163,7 +170,7 @@ def get_scores():
 
     except Exception as e:
         print(f"Error occurred: {e}")
-        return None
+        tomatoes_score = None
     
     return imdb_score, tomatoes_score
     
@@ -240,7 +247,7 @@ def get_services():
         where_watch_span.click()
         time.sleep(.5)
         
-        where_watch_section = where_watch_span.find_element(By.XPATH, "./../../../following-sibling::div")
+        where_watch_section = where_watch_span.find_element(By.XPATH, ".//ancestor::*[@jscontroller='qWD4e']/following-sibling::div")
         where_watch_text = where_watch_section.text.split("\n")
         
         for i in range(len(where_watch_text) - 1):
