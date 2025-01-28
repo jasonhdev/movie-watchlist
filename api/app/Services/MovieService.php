@@ -4,23 +4,19 @@ namespace App\Services;
 
 use App\Models\AmcData;
 use App\Models\Movie;
-use Symfony\Component\Process\Process;
-use Symfony\Component\Process\Exception\ProcessFailedException;
-use App\Services\DB;
+use Illuminate\Support\Facades\Http;
 
 class MovieService
 {
+    const SCRAPER_SEARCH_URL = "http://localhost:3001/get-movie-info";
+
     public function searchMovie(string $searchTerm): ?array
     {
-        $process = new Process([env("PYTHON_PATH"), resource_path() . "/python/movieScraper.py", $searchTerm]);
-        $process->setWorkingDirectory(resource_path() . "/python");
-        $process->run();
+        $response = Http::get(self::SCRAPER_SEARCH_URL, [
+            'search' => $searchTerm,
+        ]);
 
-        if (!$process->isSuccessful()) {
-            throw new ProcessFailedException($process);
-        }
-
-        $movieData = json_decode($process->getOutput(), true);
+        $movieData = json_decode($response, true);
 
         // Check if movie is playing at AMC
         $titleCount = 0;
