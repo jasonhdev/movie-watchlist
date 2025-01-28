@@ -1,17 +1,22 @@
+from flask import Flask, request, jsonify
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.chrome.options import Options
-import time
-from dataclasses import dataclass
+from dataclasses import dataclass, asdict
 from datetime import datetime
-import sys
 import os
-from dotenv import load_dotenv
 import re
+import json
+from dotenv import load_dotenv
+import time
+import atexit
 
 load_dotenv(".env/.env")
 chromedriver_path = os.getenv("CHROMEDRIVER_PATH")
+
+# Flask app setup
+app = Flask(__name__)
 
 options = Options()
 options.add_argument("--headless") 
@@ -67,9 +72,12 @@ class Movie:
     services: str = ""
     releaseDate: str = ""
     
+    def to_json(self):
+        return json.dumps(asdict(self), indent=4)
+    
 def get_movie_info(search):
     try:
-        set_driver_search_url()
+        set_driver_search_url(search)
         
         movie = Movie()
         movie.title = get_title()
@@ -81,13 +89,13 @@ def get_movie_info(search):
         movie.trailer = get_trailer()
         movie.image = get_poster()
     except Exception as e:
-        print(e)
+        print(f"Error occurred: {e}")
+        pass
         
     finally:
-        driver.quit()
-        return movie
+        return movie.to_json()
     
-def set_driver_search_url():
+def set_driver_search_url(search):
     if search.startswith("http"):
         searchUrl = search
         driver.get(searchUrl)
@@ -201,6 +209,7 @@ def get_meta_info():
                 
     except Exception as e:
         print(f"Error occurred: {e}")
+        pass
     
     return rating, year, genre, runtime
 
@@ -226,7 +235,7 @@ def get_services():
     try:
         where_watch_span = driver.find_element(By.XPATH, "//span[contains(text(), 'Where to watch')]")
         where_watch_span.click()
-        time.sleep(1)
+        time.sleep(.5)
         
         where_watch_section = where_watch_span.find_element(By.XPATH, "./../../../following-sibling::div")
         where_watch_text = where_watch_section.text.split("\n")
@@ -242,6 +251,7 @@ def get_services():
                 
     except Exception as e:
         print(f"Error occurred: {e}")
+        pass
         
     return available_service
 
@@ -262,12 +272,20 @@ def get_poster():
         
     return poster_url
 
-# test = "interstellar"
-# test = "inception"
-# test = "Toy story 3"
-# test = "Industry"
-test = "Moon"
-test = "cars"
+@app.route('/get-movie-info', methods=['GET'])
+def movie_info():
+    search = request.args.get('search')
+    if not search:
+        return jsonify({"error": "Missing 'search' query parameter"}), 400
 
-search = sys.argv[1] if len(sys.argv) > 1 else test
-print(get_movie_info(search))
+    result = get_movie_info(search)
+    return jsonify(json.loads(result))
+
+@atexit.register
+def shutdown_driver():
+    if driver:
+        print("Shutting down Selenium WebDriver.")
+        driver.quit()
+        
+if __name__ == '__main__':
+    app.run(debug=True, port=3001)
