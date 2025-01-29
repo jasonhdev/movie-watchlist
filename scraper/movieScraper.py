@@ -16,9 +16,7 @@ import atexit
 load_dotenv(".env/.env")
 chromedriver_path = os.getenv("CHROMEDRIVER_PATH")
 
-# Flask app setup
-app = Flask(__name__)
-
+service = Service(chromedriver_path)
 options = Options()
 options.add_argument("--headless") 
 options.add_argument("--disable-gpu")
@@ -27,8 +25,8 @@ options.add_argument("--disable-blink-features=AutomationControlled")
 options.add_argument("--disable-usb-discovery") 
 options.add_argument("user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/132.0.0.0 Safari/537.36")
 
-service = Service(chromedriver_path)
-driver = webdriver.Chrome(service=service, options=options)
+# Flask app setup
+app = Flask(__name__)
 
 ACTIVE_SUBSCRIPTIONS = [
     "Amazon Prime", 
@@ -80,28 +78,32 @@ class Movie:
     def to_json(self):
         return json.dumps(asdict(self), indent=4)
     
-def get_movie_info(search):
+def perform_search(search):
     try:
         movie = Movie()
         
-        set_driver_search_url(search)
+        driver = webdriver.Chrome(service=service, options=options)
+        time.sleep(1)
+        set_driver_search_url(driver, search)
         
-        movie.title = get_title()
-        movie.services = get_services()
-        movie.description = get_description() # Must be after get_services because of clicking issue
-        movie.imdb, movie.tomato = get_scores()
-        movie.releaseDate = get_release_date()
-        movie.rating, movie.year, movie.genre, movie.runtime = get_meta_info()
-        movie.trailer = get_trailer()
-        movie.image = get_poster()
+        movie.title = get_title(driver)
+        movie.services = get_services(driver)
+        movie.description = get_description(driver) # Must be after get_services because of clicking issue
+        movie.imdb, movie.tomato = get_scores(driver)
+        movie.releaseDate = get_release_date(driver)
+        movie.rating, movie.year, movie.genre, movie.runtime = get_meta_info(driver)
+        movie.trailer = get_trailer(driver)
+        movie.image = get_poster(driver)
     except Exception as e:
         print(f"Error occurred: {e}")
         pass
         
     finally:
+        driver.close()
+        
         return movie.to_json()
     
-def set_driver_search_url(search):
+def set_driver_search_url(driver, search):
     if search.startswith("http"):
         searchUrl = search
         driver.get(searchUrl)
@@ -125,7 +127,7 @@ def set_driver_search_url(search):
         if not potential_movie:
             raise Exception ("Search term not identified as a movie")
     
-def get_title():
+def get_title(driver):
     try:
         title = driver.find_element(By.XPATH, "//div[@data-attrid='title']").text
 
@@ -135,7 +137,7 @@ def get_title():
         
     return title
     
-def get_description():
+def get_description(driver):
     try:
         description_div = driver.find_element(By.XPATH, "//div[@data-attrid='description' or @data-attrid='VisualDigestDescription']")
         
@@ -154,7 +156,7 @@ def get_description():
         
     return description
     
-def get_scores():
+def get_scores(driver):
     try:
         # IMDb Score
         imdb_score = driver.find_element(By.XPATH, "//span[text()='IMDb' and @aria-hidden='true']/preceding-sibling::span[contains(text(), '/10')]").text
@@ -174,7 +176,7 @@ def get_scores():
     
     return imdb_score, tomatoes_score
     
-def get_trailer():
+def get_trailer(driver):
     try:
         trailer_url = driver.find_element(By.XPATH, "//a[contains(@href, 'youtube.com')]").get_attribute("href")
     except Exception as e:
@@ -183,7 +185,7 @@ def get_trailer():
     
     return trailer_url
 
-def get_meta_info():
+def get_meta_info(driver):
     # Google result ordering: Rating, Year, Genre, Runtime
     rating, year, genre, runtime = None, None, None, None
     possible_ratings = ['PG-13', 'PG', 'Not Rated', 'N/A', 'R', 'G']
@@ -223,7 +225,7 @@ def get_meta_info():
     
     return rating, year, genre, runtime
 
-def get_release_date():
+def get_release_date(driver):
     try:
         release_date = driver.find_element(By.XPATH, "//span[contains(text(), 'Release date')]/following-sibling::span").text
         release_date = re.sub(r"\((.*?)\)", "", release_date).replace("Release date:", "").replace("Initial release:", "").strip()
@@ -234,7 +236,7 @@ def get_release_date():
         
     return release_date
 
-def get_services():
+def get_services(driver):
     service_clean_name = {
         "Amazon Prime Video": "Amazon Prime",
         "Max": "HBO Max",
@@ -265,7 +267,7 @@ def get_services():
         
     return available_service
 
-def get_poster():
+def get_poster(driver):
     try:
         try:
             wiki_links = driver.find_elements(By.XPATH, "//a[contains(@href, 'wikipedia.org')]")
@@ -295,14 +297,8 @@ def movie_info():
     if not search:
         return jsonify({"error": "Missing 'search' query parameter"}), 400
 
-    result = get_movie_info(search)
-    return jsonify(json.loads(result))
-
-@atexit.register
-def shutdown_driver():
-    if driver:
-        print("Shutting down Selenium WebDriver.")
-        driver.quit()
+    result = perform_search(search)
+    return jsonify(json.loads(result))        
         
 if __name__ == '__main__':
     app.run(debug=True, port=3001)
