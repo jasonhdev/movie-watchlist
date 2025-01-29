@@ -157,7 +157,7 @@ def get_description():
 def get_scores():
     try:
         # IMDb Score
-        imdb_score = driver.find_element(By.XPATH, "//span[text()='IMDb' and @aria-hidden='true']/preceding-sibling::span").text
+        imdb_score = driver.find_element(By.XPATH, "//span[text()='IMDb' and @aria-hidden='true']/preceding-sibling::span[contains(text(), '/10')]").text
         imdb_score = imdb_score.replace("IMDb", "").strip()
     except Exception as e:
         print(f"Error occurred: {e}")
@@ -165,7 +165,7 @@ def get_scores():
         
     try:
         # Rotten Tomatoes Score
-        tomatoes_score = driver.find_element(By.XPATH, "//span[text()='Rotten Tomatoes' and @aria-hidden='true']/preceding-sibling::span").text
+        tomatoes_score = driver.find_element(By.XPATH, "//span[text()='Rotten Tomatoes' and @aria-hidden='true']/preceding-sibling::span[contains(text(), '%')]").text
         tomatoes_score = tomatoes_score.replace("Rotten Tomatoes", "").strip()
 
     except Exception as e:
