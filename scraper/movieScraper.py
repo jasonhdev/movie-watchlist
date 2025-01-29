@@ -142,6 +142,7 @@ def get_description():
         try:
             more_button = description_div.find_element(By.XPATH, ".//span[contains(@aria-label, 'More description')]")
             more_button.click()
+            time.sleep(1)
         except Exception:
             pass
 
@@ -158,7 +159,6 @@ def get_scores():
         # IMDb Score
         imdb_score = driver.find_element(By.XPATH, "//span[text()='IMDb' and @aria-hidden='true']/preceding-sibling::span").text
         imdb_score = imdb_score.replace("IMDb", "").strip()
-        print(imdb_score)
     except Exception as e:
         print(f"Error occurred: {e}")
         imdb_score = None
@@ -245,7 +245,7 @@ def get_services():
     try:
         where_watch_span = driver.find_element(By.XPATH, "//span[contains(text(), 'Where to watch')]")
         where_watch_span.click()
-        time.sleep(.5)
+        time.sleep(1)
         
         where_watch_section = where_watch_span.find_element(By.XPATH, ".//ancestor::*[@jscontroller='qWD4e']/following-sibling::div")
         where_watch_text = where_watch_section.text.split("\n")
@@ -268,9 +268,16 @@ def get_services():
 def get_poster():
     try:
         try:
-            wiki_link = driver.find_element(By.XPATH, "//a[contains(@href, 'wikipedia.org')]")
-            wiki_link.click()
-            time.sleep(1)
+            wiki_links = driver.find_elements(By.XPATH, "//a[contains(@href, 'wikipedia.org')]")
+            current_url_before = driver.current_url
+            for link in wiki_links:
+                link.click()
+                current_url_after = driver.current_url
+                
+                if current_url_before != current_url_after:
+                    time.sleep(1)
+                    break
+                
         except Exception as e:
             pass
 
