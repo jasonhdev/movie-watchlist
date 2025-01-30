@@ -11,10 +11,12 @@ import json
 from dotenv import load_dotenv
 import time
 from typing import Optional
-import atexit
+import logging
 
 load_dotenv(".env/.env")
 chromedriver_path = os.getenv("CHROMEDRIVER_PATH")
+
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 service = Service(chromedriver_path)
 options = Options()
@@ -95,7 +97,7 @@ def perform_search(search):
         movie.trailer = get_trailer(driver)
         movie.image = get_poster(driver)
     except Exception as e:
-        print(f"Error occurred: {e}")
+        logging.error(e)
         pass
         
     finally:
@@ -109,19 +111,24 @@ def set_driver_search_url(driver, search):
         driver.get(searchUrl)
             
     else:
+        logging.info(f"Searching for `{search}`")
         searchUrl = f"https://www.google.com/search?q={search}"
         driver.get(searchUrl)
         
-        potential_movie = driver.find_elements(By.XPATH, " | ".join([f"//div[@role='complementary']//*[contains(text(), '{word}')]" for word in MOVIE_DETECT_KEYWORDS]))
+        potential_movie = driver.find_elements(By.XPATH, " | ".join([f"//div[@role='complementary']//*[contains(text(), '{word}')]" for word in MOVIE_DETECT_KEYWORDS]))        
         time.sleep(1)
         
         if not potential_movie:
             for media_type in MEDIA_TYPES:
-                searchUrl = f"https://www.google.com/search?q={search} {media_type}"
+                potentialSearch = f"{search} {media_type}"
+                searchUrl = f"https://www.google.com/search?q={potentialSearch}"
+                logging.info(f"Not found. Searching for `{potentialSearch}`")
+                
                 driver.get(searchUrl)
                 time.sleep(1)
                 potential_movie = driver.find_elements(By.XPATH, " | ".join([f"//div[@role='complementary']//*[contains(text(), '{word}')]" for word in MOVIE_DETECT_KEYWORDS]))
                 if potential_movie:
+                    logging.info(f"Commiting to `{potentialSearch}`")
                     break
                 
         if not potential_movie:
@@ -131,8 +138,8 @@ def get_title(driver):
     try:
         title = driver.find_element(By.XPATH, "//div[@data-attrid='title']").text
 
-    except Exception as e:
-        print(f"Error occurred: {e}")
+    except Exception:
+        logging.error("Unable to find find title")
         return None
         
     return title
@@ -150,8 +157,8 @@ def get_description(driver):
 
         description = description_div.text.replace("Description\n","")
 
-    except Exception as e:
-        print(f"Error occurred: {e}")
+    except Exception:
+        logging.error("Unable to find find description")
         return None
         
     return description
@@ -161,8 +168,8 @@ def get_scores(driver):
         # IMDb Score
         imdb_score = driver.find_element(By.XPATH, "//span[text()='IMDb' and @aria-hidden='true']/preceding-sibling::span[contains(text(), '/10')]").text
         imdb_score = imdb_score.replace("IMDb", "").strip()
-    except Exception as e:
-        print(f"Error occurred: {e}")
+    except Exception:
+        logging.error("Unable to find IMDb score")
         imdb_score = None
         
     try:
@@ -170,8 +177,8 @@ def get_scores(driver):
         tomatoes_score = driver.find_element(By.XPATH, "//span[text()='Rotten Tomatoes' and @aria-hidden='true']/preceding-sibling::span[contains(text(), '%')]").text
         tomatoes_score = tomatoes_score.replace("Rotten Tomatoes", "").strip()
 
-    except Exception as e:
-        print(f"Error occurred: {e}")
+    except Exception:
+        logging.error("Unable to find find Tomatoes score")
         tomatoes_score = None
     
     return imdb_score, tomatoes_score
@@ -179,8 +186,8 @@ def get_scores(driver):
 def get_trailer(driver):
     try:
         trailer_url = driver.find_element(By.XPATH, "//a[contains(@href, 'youtube.com')]").get_attribute("href")
-    except Exception as e:
-        print(f"Error occurred: {e}")
+    except Exception:
+        logging.error("Unable to find find trailer")
         return None
     
     return trailer_url
@@ -196,12 +203,11 @@ def get_meta_info(driver):
         meta_info = [part.strip() for part in meta_info if part.strip() != ","]
     
         for info in meta_info:
-            # Extract rating
+            # Extract rating, don't continue because sometimes rating and year are in the same text
             if not rating:
                 rating = next((rating_value for rating_value in possible_ratings if rating_value in info), None)
                 if rating:
                     info = info.replace(rating, '').strip() if rating else info
-                    continue
 
             # Match year to 4 digit integer
             if not year and len(info) == 4 and info.isnumeric():
@@ -219,8 +225,8 @@ def get_meta_info(driver):
             if not genre and genre not in ["Film", "Movie"]:
                 genre = info
                 
-    except Exception as e:
-        print(f"Error occurred: {e}")
+    except Exception:
+        logging.error("Unable to find meta info")
         pass
     
     return rating, year, genre, runtime
@@ -230,8 +236,8 @@ def get_release_date(driver):
         release_date = driver.find_element(By.XPATH, "//span[contains(text(), 'Release date')]/following-sibling::span").text
         release_date = re.sub(r"\((.*?)\)", "", release_date).replace("Release date:", "").replace("Initial release:", "").strip()
     
-    except Exception as e:
-        print(f"Error occurred: {e}")
+    except Exception:
+        logging.error("Unable to find release date")
         return None
         
     return release_date
@@ -261,8 +267,8 @@ def get_services(driver):
                     available_service = service_name
                     break
                 
-    except Exception as e:
-        print(f"Error occurred: {e}")
+    except Exception:
+        logging.error("Unable to find services")
         pass
         
     return available_service
@@ -280,13 +286,13 @@ def get_poster(driver):
                     time.sleep(1)
                     break
                 
-        except Exception as e:
+        except Exception:
             pass
 
         poster_url = driver.find_element(By.XPATH, "//td[@class='infobox-image']//a[@class='mw-file-description']/img").get_attribute('src')
 
-    except Exception as e:
-        print(f"Error occurred: {e}")
+    except Exception:
+        logging.error("Unable to find poster image")
         return None
         
     return poster_url
@@ -297,8 +303,8 @@ def movie_info():
     if not search:
         return jsonify({"error": "Missing 'search' query parameter"}), 400
 
-    result = perform_search(search)
-    return jsonify(json.loads(result))        
+    movieResult = perform_search(search)
+    return jsonify(json.loads(movieResult))        
         
 if __name__ == '__main__':
     app.run(debug=True, port=3001)
