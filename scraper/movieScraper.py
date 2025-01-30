@@ -275,22 +275,13 @@ def get_services(driver):
 
 def get_poster(driver):
     try:
-        try:
-            wiki_links = driver.find_elements(By.XPATH, "//a[contains(@href, 'wikipedia.org')]")
-            current_url_before = driver.current_url
-            for link in wiki_links:
-                link.click()
-                current_url_after = driver.current_url
+        wiki_link = driver.find_element(By.XPATH, "//a[contains(@href, 'wikipedia.org')]")
+        wiki_url = wiki_link.get_attribute('href')
                 
-                if current_url_before != current_url_after:
-                    time.sleep(1)
-                    break
+        logging.info(f"Trying {wiki_url}")
+        driver.get(wiki_url)
                 
-        except Exception:
-            pass
-
         poster_url = driver.find_element(By.XPATH, "//td[@class='infobox-image']//a[@class='mw-file-description']/img").get_attribute('src')
-
     except Exception:
         logging.error("Unable to find poster image")
         return None
