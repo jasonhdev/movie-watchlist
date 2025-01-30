@@ -36,7 +36,11 @@ function App() {
     }
 
     // Set focus on search input anytime key is pressed
-    document.addEventListener("keydown", () => { searchInputRef.current.focus() }, true);
+    document.addEventListener("keydown", (event) => {
+      if (/^[a-zA-Z0-9]$/.test(event.key)) {
+        searchInputRef.current.focus();
+      }
+    });
 
     if (document.cookie) {
       let cookieMatch = document.cookie.match('type=(.*)');
