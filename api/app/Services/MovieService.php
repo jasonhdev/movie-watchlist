@@ -46,7 +46,7 @@ class MovieService {
     }
 
     public function getRefreshedMovieData(Movie $movie): Movie {
-        if ($movieData = $this->searchMovie($movie->search_term)) {
+        if ($movieData = $this->searchMovie($movie->search_term ?? $movie->title)) {
             $movie->title = $movieData['title'] ?? $movie->title;
             $movie->description = $movieData['description'] ?? $movie->description;
             $movie->tomato = $movieData['tomato'] ?? $movie->tomato;

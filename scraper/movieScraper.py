@@ -202,12 +202,14 @@ def get_meta_info(driver):
         meta_info = " ".join([span.text for span in subtitle_element]).split("‧")
         meta_info = [part.strip() for part in meta_info if part.strip() != ","]
     
-        for info in meta_info:
+        for info in meta_info:            
             # Extract rating, don't continue because sometimes rating and year are in the same text
             if not rating:
-                rating = next((rating_value for rating_value in possible_ratings if rating_value in info), None)
+                info_words = info.split()
+                rating = next((rating_value for rating_value in possible_ratings if rating_value in info_words), None)
+                
                 if rating:
-                    info = info.replace(rating, '').strip() if rating else info
+                    info = info.replace(rating, '').strip()
 
             # Match year to 4 digit integer
             if not year and len(info) == 4 and info.isnumeric():
