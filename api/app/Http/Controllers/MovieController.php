@@ -8,8 +8,7 @@ use App\Services\MovieService;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 
-class MovieController extends Controller
-{
+class MovieController extends Controller {
     const LIST_WATCH = "watch";
     const LIST_UPCOMING = "upcoming";
     const LIST_HISTORY = "history";
@@ -21,15 +20,13 @@ class MovieController extends Controller
 
     private MovieService $movieService;
 
-    public function __construct(Request $request, MovieService $movieService)
-    {
+    public function __construct(Request $request, MovieService $movieService) {
         parent::__construct($request);
 
         $this->movieService = $movieService;
     }
 
-    public function index(Request $request): JsonResponse
-    {
+    public function index(Request $request): JsonResponse {
         $list = $request->list;
 
         $movies = [];
@@ -70,8 +67,7 @@ class MovieController extends Controller
     }
 
     // Unused, for testing by url
-    public function testSearchMovie(Request $request): JsonResponse
-    {
+    public function testSearchMovie(Request $request): JsonResponse {
         $movieData = [];
         if ($searchTerm = $request->searchTerm) {
             $movieData = $this->movieService->searchMovie($searchTerm);
@@ -83,11 +79,23 @@ class MovieController extends Controller
         ]);
     }
 
-    public function createMovie(Request $request): JsonResponse
-    {
+    public function createMovie(Request $request): JsonResponse {
         $movie = new Movie();
 
         $list = $request->list;
+        if ($list === self::LIST_UPCOMING) {
+            $movie->released = false;
+        }
+
+        if ($list === self::LIST_HISTORY) {
+            $movie->watched = true;
+            $movie->watched_date = date("Y-m-d H:i:s");
+        }
+
+        if ($this->loggedIn) {
+            $movie->title = $request->searchTerm;
+            $movie->save();
+        }
 
         // Allow function to complete despite failed search, to save search term
         $movieData = $this->movieService->searchMovie($request->searchTerm);
@@ -108,15 +116,6 @@ class MovieController extends Controller
 
         $movie->search_term = $request->searchTerm;
 
-        if ($list === self::LIST_UPCOMING) {
-            $movie->released = false;
-        }
-
-        if ($list === self::LIST_HISTORY) {
-            $movie->watched = true;
-            $movie->watched_date = date("Y-m-d H:i:s");
-        }
-
         if ($this->loggedIn) {
             $movie->save();
         }
@@ -127,8 +126,7 @@ class MovieController extends Controller
         ]);
     }
 
-    public function updateMovie(Request $request, $id): JsonResponse
-    {
+    public function updateMovie(Request $request, $id): JsonResponse {
         if (Movie::where('id', $id)->exists()) {
             $movie = Movie::find($id);
 
@@ -170,8 +168,7 @@ class MovieController extends Controller
         }
     }
 
-    public function deleteMovie(int $id): JsonResponse
-    {
+    public function deleteMovie(int $id): JsonResponse {
         if (Movie::where('id', $id)->exists()) {
             $movie = Movie::find($id);
 
@@ -191,8 +188,7 @@ class MovieController extends Controller
         }
     }
 
-    public function refreshBatch(): void
-    {
+    public function refreshBatch(): void {
         $movies = Movie::select('*')
             ->where(function ($query) {
                 $query->where('watched', '=', 0)
