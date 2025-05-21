@@ -97,7 +97,6 @@ class MovieController extends Controller {
             $movie->save();
         }
 
-        // Allow function to complete despite failed search, to save search term
         $movieData = $this->movieService->searchMovie($request->searchTerm);
 
         $movie->title = $movieData['title'] ?? $request->searchTerm;

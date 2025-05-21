@@ -37,6 +37,10 @@ function App() {
 
     // Set focus on search input anytime key is pressed
     document.addEventListener("keydown", (event) => {
+      if (event.ctrlKey || event.altKey) {
+        return;
+      }
+
       if (/^[a-zA-Z0-9]$/.test(event.key)) {
         searchInputRef.current.focus();
       }
