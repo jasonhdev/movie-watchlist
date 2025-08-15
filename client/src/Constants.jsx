@@ -9,6 +9,9 @@ const Constants = {
     ACTION_DELETE: "delete",
     ACTION_REFRESH: "refresh",
     ACTION_AMC: "amc",
+
+    WATCHLIST_API_URL: process.env.REACT_APP_WATCHLIST_API_URL,
+    MAIN_API_URL: process.env.REACT_APP_MAIN_API_URL,
 }
 
 export default Constants

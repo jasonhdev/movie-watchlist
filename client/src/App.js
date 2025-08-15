@@ -5,6 +5,7 @@ import Constants from "./Constants"
 import 'react-responsive-modal/styles.css';
 import { Modal } from 'react-responsive-modal';
 import { useState, useEffect, useRef } from "react";
+import { useAuth } from "./AuthContext";
 
 function App() {
   const [currentTab, setCurrentTab] = useState(Constants.TAB_WATCH);
@@ -16,6 +17,8 @@ function App() {
   const searchInputRef = useRef();
   const [token, setToken] = useState(null);
   const [showPreviewDisclaimer, setShowPreviewDisclaimer] = useState(true);
+  const currentUrl = window.location.href;
+  const { user, loading } = useAuth();
 
   // On page load
   useEffect(() => {
@@ -46,18 +49,15 @@ function App() {
       }
     });
 
-    if (document.cookie) {
-      let cookieMatch = document.cookie.match('type=(.*)');
-
-      if (cookieMatch && cookieMatch[1]) {
-        setToken(cookieMatch[1])
-        setShowPreviewDisclaimer(false);
-      }
-    }
-
     loadMovies();
 
   }, [])
+
+  useEffect(() => {
+    if (user) {
+      setShowPreviewDisclaimer(false);
+    }
+  }, [loading])
 
   const handleTabChange = async (tab) => {
     setCurrentTab(tab);
@@ -77,7 +77,7 @@ function App() {
 
       setMovies(moviesCache[currentTab]);
 
-      await fetch(process.env.REACT_APP_API_URL + '/movie/create', {
+      await fetch( Constants.WATCHLIST_API_URL + '/movie/create', {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -176,11 +176,11 @@ function App() {
 
   const fetchMovieList = async (list = Constants.TAB_WATCH) => {
     if (list === Constants.TAB_AMC) {
-      const response = await fetch(process.env.REACT_APP_API_URL + "/amc");
+      const response = await fetch(Constants.WATCHLIST_API_URL + "/amc");
       return await response.json();
     }
 
-    const response = await fetch(process.env.REACT_APP_API_URL + "?list=" + list);
+    const response = await fetch(Constants.WATCHLIST_API_URL + "?list=" + list);
     return await response.json();
   }
 
@@ -195,7 +195,7 @@ function App() {
     <>
       {showPreviewDisclaimer &&
         <span className="previewDisclaimer">
-          <p>Preview environment only. <a href="https://pizzachicken.xyz/login">Log in</a> to have changes saved.</p>
+          <p>Preview environment only. <a href={`${Constants.MAIN_API_URL}/login?redir=${encodeURIComponent(currentUrl)}`}>Log in</a> to have changes saved.</p>
           <button onClick={() => { setShowPreviewDisclaimer(false) }}>x</button>
         </span>
       }

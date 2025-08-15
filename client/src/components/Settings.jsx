@@ -3,7 +3,7 @@ import Constants from "../Constants"
 
 const Settings = ({ movie, currentTab, updateMovieCard, token }) => {
 
-    const UPDATE_URL = process.env.REACT_APP_API_URL + '/movie/update/' + movie.id;
+    const UPDATE_URL = Constants.WATCHLIST_API_URL + '/movie/update/' + movie.id;
     const updateRequestOptions = {
         method: "PUT",
         headers: {
@@ -60,7 +60,7 @@ const Settings = ({ movie, currentTab, updateMovieCard, token }) => {
         });
 
         updateRequestOptions.method = "DELETE";
-        fetch(process.env.REACT_APP_API_URL + "/movie/delete/" + movie.id, updateRequestOptions);
+        fetch(Constants.WATCHLIST_API_URL + "/movie/delete/" + movie.id, updateRequestOptions);
     }
 
     const handleRefreshAction = async () => {
@@ -86,7 +86,7 @@ const Settings = ({ movie, currentTab, updateMovieCard, token }) => {
     }
 
     const handleAmcMoveAction = () => {
-        fetch(process.env.REACT_APP_API_URL + '/amc/create/' + movie.id, updateRequestOptions);
+        fetch(Constants.WATCHLIST_API_URL + '/amc/create/' + movie.id, updateRequestOptions);
 
         movie.amc = 1;
 
