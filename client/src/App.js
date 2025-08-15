@@ -195,7 +195,7 @@ function App() {
     <>
       {showPreviewDisclaimer &&
         <span className="previewDisclaimer">
-          <p>Preview environment only. <a href={`http://localhost:81/login?redir=${encodeURIComponent(currentUrl)}`}>Log in</a> to have changes saved.</p>
+          <p>Preview environment only. <a href={`http://pizzachicken.dev/login?redir=${encodeURIComponent(currentUrl)}`}>Log in</a> to have changes saved.</p>
           <button onClick={() => { setShowPreviewDisclaimer(false) }}>x</button>
         </span>
       }
