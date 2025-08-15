@@ -5,6 +5,7 @@ import Constants from "./Constants"
 import 'react-responsive-modal/styles.css';
 import { Modal } from 'react-responsive-modal';
 import { useState, useEffect, useRef } from "react";
+import { useAuth } from "./AuthContext";
 
 function App() {
   const [currentTab, setCurrentTab] = useState(Constants.TAB_WATCH);
@@ -16,6 +17,8 @@ function App() {
   const searchInputRef = useRef();
   const [token, setToken] = useState(null);
   const [showPreviewDisclaimer, setShowPreviewDisclaimer] = useState(true);
+  const currentUrl = window.location.href;
+  const { user, loading } = useAuth();
 
   // On page load
   useEffect(() => {
@@ -46,18 +49,15 @@ function App() {
       }
     });
 
-    if (document.cookie) {
-      let cookieMatch = document.cookie.match('type=(.*)');
-
-      if (cookieMatch && cookieMatch[1]) {
-        setToken(cookieMatch[1])
-        setShowPreviewDisclaimer(false);
-      }
-    }
-
     loadMovies();
 
   }, [])
+
+  useEffect(() => {
+    if (user) {
+      setShowPreviewDisclaimer(false);
+    }
+  }, [loading])
 
   const handleTabChange = async (tab) => {
     setCurrentTab(tab);
@@ -195,7 +195,7 @@ function App() {
     <>
       {showPreviewDisclaimer &&
         <span className="previewDisclaimer">
-          <p>Preview environment only. <a href="https://pizzachicken.xyz/login">Log in</a> to have changes saved.</p>
+          <p>Preview environment only. <a href={`http://localhost:81/login?redir=${encodeURIComponent(currentUrl)}`}>Log in</a> to have changes saved.</p>
           <button onClick={() => { setShowPreviewDisclaimer(false) }}>x</button>
         </span>
       }
