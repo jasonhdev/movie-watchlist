@@ -15,7 +15,6 @@ function App() {
   const [isLoaded, setIsLoaded] = useState(false);
   const [displayAmcModal, setDisplayAmcModal] = useState(false);
   const searchInputRef = useRef();
-  const [token, setToken] = useState(null);
   const [showPreviewDisclaimer, setShowPreviewDisclaimer] = useState(true);
   const currentUrl = window.location.href;
   const { user, loading } = useAuth();
@@ -79,9 +78,9 @@ function App() {
 
       await fetch( Constants.WATCHLIST_API_URL + '/movie/create', {
         method: "POST",
+        credentials: "include",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": "Bearer " + token
         },
         body: JSON.stringify({
           "list": currentTab,
@@ -215,7 +214,7 @@ function App() {
             <button onClick={openAmcModal}>Showings at AMC</button>
           </div>
 
-          <Movies movies={movies} currentTab={currentTab} updateMovieCard={updateMovieCard} token={token} />
+          <Movies movies={movies} currentTab={currentTab} updateMovieCard={updateMovieCard} />
 
           <Modal
             open={displayAmcModal}
@@ -227,7 +226,7 @@ function App() {
             closeIcon={<p className="closeModalBtn">close</p>}
           >
             <p className="amcModalLabel">Now Showing at AMC</p>
-            <Movies movies={amcMovies} currentTab={Constants.TAB_AMC} updateMovieCard={updateMovieCard} token={token} />
+            <Movies movies={amcMovies} currentTab={Constants.TAB_AMC} updateMovieCard={updateMovieCard} />
           </Modal>
         </div>
       }

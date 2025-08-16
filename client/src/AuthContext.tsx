@@ -11,24 +11,18 @@ interface User {
 interface AuthContextType {
     user: User | null;
     loading: boolean;
-    localIp: string | null;
-    isHomeNetwork: boolean;
-    login: (email: string, password: string) => Promise<void>;
-    logout: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const [user, setUser] = useState<User | null>(null);
-    const [localIp, setLocalIp] = useState(null);
-    const [isHomeNetwork, setIsHomeNetwork] = useState(false);
     const [loading, setLoading] = useState<boolean>(true);
 
     useEffect(() => {
 
         const fetchUser = () => {
-            fetch(`${Constants.MAIN_API_URL}/user`,
+            fetch(`${Constants.MAIN_API_URL}/api/user`,
                 {
                     headers: { "Content-Type": "application/json" },
                     method: "GET",
@@ -39,9 +33,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
                     if (data.user) {
                         setUser(data.user);
                     }
-
-                    setLocalIp(data.networkInfo.localIp);
-                    setIsHomeNetwork(data.networkInfo.isHomeNetwork);
                 })
                 .catch(() => setUser(null))
                 .finally(() => setLoading(false));
@@ -51,40 +42,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     }, []);
 
-    const login = async (name: string, password: string) => {
-        const response = await fetch(`${Constants.MAIN_API_URL}/login`, {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                "Accept": "application/json",
-            },
-            credentials: "include",
-            body: JSON.stringify({ name, password }),
-        });
-
-        if (response.ok) {
-            const data = await response.json();
-            const userData: User = data.user;
-            setUser(userData);
-        } else {
-            throw new Error("Login failed");
-        }
-    };
-
-    const logout = async () => {
-        await fetch(`${Constants.MAIN_API_URL}/logout`, {
-            method: "POST",
-            credentials: "include",
-            headers: {
-                "Content-Type": "application/json",
-            },
-        });
-
-        setUser(null);
-    };
-
     return (
-        <AuthContext.Provider value={{ user, localIp, isHomeNetwork, loading, login, logout }}>
+        <AuthContext.Provider value={{ user, loading }}>
             {children}
         </AuthContext.Provider>
     );

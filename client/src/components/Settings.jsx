@@ -6,9 +6,9 @@ const Settings = ({ movie, currentTab, updateMovieCard, token }) => {
     const UPDATE_URL = Constants.WATCHLIST_API_URL + '/movie/update/' + movie.id;
     const updateRequestOptions = {
         method: "PUT",
+        credentials: "include",
         headers: {
             "Content-Type": "application/json",
-            "Authorization": "Bearer " + token
         },
     }
 
