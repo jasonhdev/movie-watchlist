@@ -8,6 +8,7 @@ use Illuminate\Foundation\Validation\ValidatesRequests;
 use Illuminate\Routing\Controller as BaseController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 
 class Controller extends BaseController {
     use AuthorizesRequests, DispatchesJobs, ValidatesRequests;
@@ -15,14 +16,25 @@ class Controller extends BaseController {
     public $loggedIn = false;
 
     public function __construct(Request $request) {
+
         $token = $request->cookie('auth_token');
 
-        $response = Http::withHeaders([
-            'Cookie' => "auth_token={$token}" // send cookie to Auth service
-        ])->get(env('MAIN_API_URL') . '/user');
+        Log::info("token: " . $token);
 
-        if ($response->successful() && $response->json('user')) {
+        if (!$token) {
+            return;
+        }
+
+        $response = Http::withToken($token)->get(env('MAIN_API_URL') . '/user');
+
+        Log::info($response->json());
+        Log::info($response->body());
+
+        if ($response->json('user')) {
             $this->loggedIn = true;
+            Log::info("success");
+        } else {
+            Log::info("failed");
         }
     }
 }

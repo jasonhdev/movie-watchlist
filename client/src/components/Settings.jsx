@@ -1,7 +1,7 @@
 import { useState } from "react";
 import Constants from "../Constants"
 
-const Settings = ({ movie, currentTab, updateMovieCard, token }) => {
+const Settings = ({ movie, currentTab, updateMovieCard }) => {
 
     const UPDATE_URL = Constants.WATCHLIST_API_URL + '/movie/update/' + movie.id;
     const updateRequestOptions = {

@@ -4,7 +4,7 @@ import Settings from './Settings';
 import Constants from "../Constants";
 import { useState, useEffect } from "react";
 
-const MovieCard = ({ movie, currentTab, isLoading, updateMovieCard, token }) => {
+const MovieCard = ({ movie, currentTab, isLoading, updateMovieCard }) => {
 
     const [displayExtraView, setDisplayExtraView] = useState(false);
 
@@ -86,7 +86,7 @@ const MovieCard = ({ movie, currentTab, isLoading, updateMovieCard, token }) => 
                         {movie.title}
                         <i className="fa fa-link"></i>
                     </a>
-                    <Settings movie={movie} currentTab={currentTab} updateMovieCard={updateMovieCard} token={token}></Settings>
+                    <Settings movie={movie} currentTab={currentTab} updateMovieCard={updateMovieCard}></Settings>
                 </div>
 
                 {getInfoSection()}
