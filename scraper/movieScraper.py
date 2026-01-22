@@ -20,7 +20,7 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(
 
 service = Service(chromedriver_path)
 options = Options()
-options.add_argument("--headless") 
+#options.add_argument("--headless") 
 options.add_argument("window-size=1920,1080")
 options.add_argument("--disable-gpu")
 options.add_argument("--no-sandbox")
@@ -115,6 +115,14 @@ def set_driver_search_url(driver, search):
         logging.info(f"Searching for `{search}`")
         searchUrl = f"https://www.google.com/search?q={search}"
         driver.get(searchUrl)
+        
+        body_text = driver.find_element("tag name", "body").text
+        body_lower = body_text.lower()
+
+        if "unusual traffic" in body_lower or "not a robot" in body_lower or "enable javascript" in body_lower:
+            print("Bot detection triggered, retry")
+            driver.get(searchUrl)
+        time.sleep(1)
         
         potential_movie = driver.find_elements(By.XPATH, " | ".join([f"//div[@role='complementary']//*[contains(text(), '{word}')]" for word in MOVIE_DETECT_KEYWORDS]))        
         time.sleep(1)
@@ -302,3 +310,4 @@ def movie_info():
         
 if __name__ == '__main__':
     app.run(debug=True, port=3001)
+    # print(perform_search("Inception"))
