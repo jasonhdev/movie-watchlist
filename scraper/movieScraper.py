@@ -9,7 +9,6 @@ import os
 import re
 import json
 from dotenv import load_dotenv
-import time
 from typing import Optional
 import logging
 
@@ -86,7 +85,8 @@ def perform_search(search):
         movie = Movie()
         
         driver = webdriver.Chrome(service=service, options=options)
-        time.sleep(1)
+        driver.set_page_load_timeout(10)
+        
         set_driver_search_url(driver, search)
         
         movie.title = get_title(driver)
@@ -122,10 +122,10 @@ def set_driver_search_url(driver, search):
         if "unusual traffic" in body_lower or "not a robot" in body_lower or "enable javascript" in body_lower:
             print("Bot detection triggered, retry")
             driver.get(searchUrl)
-        time.sleep(1)
+        # time.sleep(1)
         
         potential_movie = driver.find_elements(By.XPATH, " | ".join([f"//div[@role='complementary']//*[contains(text(), '{word}')]" for word in MOVIE_DETECT_KEYWORDS]))        
-        time.sleep(1)
+        # time.sleep(1)
         
         if not potential_movie:
             for media_type in MEDIA_TYPES:
@@ -134,7 +134,7 @@ def set_driver_search_url(driver, search):
                 logging.info(f"Not found. Searching for `{potentialSearch}`")
                 
                 driver.get(searchUrl)
-                time.sleep(1)
+                # time.sleep(1)
                 potential_movie = driver.find_elements(By.XPATH, " | ".join([f"//div[@role='complementary']//*[contains(text(), '{word}')]" for word in MOVIE_DETECT_KEYWORDS]))
                 if potential_movie:
                     logging.info(f"Commiting to `{potentialSearch}`")
@@ -160,7 +160,7 @@ def get_description(driver):
         try:
             more_button = description_div.find_element(By.XPATH, ".//span[contains(@aria-label, 'More description')]")
             more_button.click()
-            time.sleep(1)
+            # time.sleep(1)
         except Exception:
             pass
 
@@ -264,7 +264,7 @@ def get_services(driver):
     try:
         where_watch_span = driver.find_element(By.XPATH, "//span[contains(text(), 'Where to watch')]")
         where_watch_span.click()
-        time.sleep(1)
+        # time.sleep(1)
         
         where_watch_section = where_watch_span.find_element(By.XPATH, ".//ancestor::*[@jscontroller='qWD4e']/following-sibling::div")
         where_watch_text = where_watch_section.text.split("\n")
@@ -310,4 +310,3 @@ def movie_info():
         
 if __name__ == '__main__':
     app.run(debug=True, port=3001)
-    # print(perform_search("Inception"))
