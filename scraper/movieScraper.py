@@ -12,21 +12,6 @@ from dotenv import load_dotenv
 from typing import Optional
 import logging
 
-load_dotenv(".env/.env")
-chromedriver_path = os.getenv("CHROMEDRIVER_PATH")
-
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
-
-service = Service(chromedriver_path)
-options = Options()
-#options.add_argument("--headless") 
-options.add_argument("window-size=1920,1080")
-options.add_argument("--disable-gpu")
-options.add_argument("--no-sandbox")
-options.add_argument("--disable-blink-features=AutomationControlled")
-options.add_argument("--disable-usb-discovery") 
-options.add_argument("user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/132.0.0.0 Safari/537.36")
-
 # Flask app setup
 app = Flask(__name__)
 
@@ -82,13 +67,13 @@ class Movie:
     
 def perform_search(search):
     try:
-        movie = Movie()
-        
         driver = webdriver.Chrome(service=service, options=options)
         driver.set_page_load_timeout(10)
-        
+        driver.implicitly_wait(10)     
+         
         set_driver_search_url(driver, search)
         
+        movie = Movie()
         movie.title = get_title(driver)
         movie.services = get_services(driver)
         movie.description = get_description(driver) # Must be after get_services because of clicking issue
@@ -103,7 +88,6 @@ def perform_search(search):
         
     finally:
         driver.close()
-        
         return movie.to_json()
     
 def set_driver_search_url(driver, search):
@@ -135,6 +119,11 @@ def set_driver_search_url(driver, search):
                 
                 driver.get(searchUrl)
                 # time.sleep(1)
+                
+                body_text = driver.find_element("tag name", "body").text
+                body_lower = body_text.lower()
+                print(body_lower)
+                
                 potential_movie = driver.find_elements(By.XPATH, " | ".join([f"//div[@role='complementary']//*[contains(text(), '{word}')]" for word in MOVIE_DETECT_KEYWORDS]))
                 if potential_movie:
                     logging.info(f"Commiting to `{potentialSearch}`")
@@ -309,4 +298,30 @@ def movie_info():
     return jsonify(json.loads(movieResult))        
         
 if __name__ == '__main__':
-    app.run(debug=True, port=3001)
+    load_dotenv(".env/.env")
+    chromedriver_path = os.getenv("CHROMEDRIVER_PATH")
+
+    logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+
+    service = Service(chromedriver_path)
+    options = Options()
+    #options.add_argument("--headless") 
+    options.add_argument("window-size=1920,1080")
+    options.add_argument("--disable-gpu")
+    options.add_argument("--no-sandbox")
+    options.add_argument("--disable-blink-features=AutomationControlled")
+    options.add_argument("--disable-usb-discovery") 
+    options.add_argument("user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/132.0.0.0 Safari/537.36")
+    
+    options.add_argument("--disable-dev-shm-usage")
+    options.add_argument("--disable-extensions")
+    options.add_argument("--disable-background-networking")
+    options.add_argument("--disable-sync")
+    options.add_argument("--disable-default-apps")
+    options.add_argument("--disable-popup-blocking")
+    options.add_argument("--disable-features=Translate,BackForwardCache")
+    options.add_argument("--metrics-recording-only")
+    options.add_argument("--no-first-run")
+    options.add_argument("--safebrowsing-disable-auto-update")
+    
+    app.run(debug=False, port=3001)
