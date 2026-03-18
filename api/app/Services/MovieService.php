@@ -20,7 +20,6 @@ class MovieService {
                 'credentials' => $credentials,
             ]);
 
-            Log::info("Sending job");
             $jobId = (string) Str::uuid();
             $sqs->sendMessage([
                 'QueueUrl' => env('SQS_QUEUE_URL'),
@@ -33,7 +32,7 @@ class MovieService {
 
             sleep(3);
             $start = time();
-            $timeout = 30;
+            $timeout = 60;
             
             $movieData = [];
             while (time() - $start < $timeout) {
@@ -44,7 +43,6 @@ class MovieService {
                 ]);
 
                 if (empty($result['Messages'])) {
-                    Log::info("No messages, continuing");
                     continue;
                 }
 
@@ -53,7 +51,6 @@ class MovieService {
                     $receipt = $msg['ReceiptHandle'];
 
                     if (($body['job_id'] ?? null) === $jobId) {
-                        Log::info("Job results found");
 
                         $sqs->deleteMessage([
                             'QueueUrl' => env('SQS_RESULTS_QUEUE_URL'),
