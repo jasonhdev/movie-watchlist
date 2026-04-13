@@ -198,7 +198,7 @@ class MovieController extends Controller {
                     ->orWhere('year', '>=', date("Y"));
             })
             ->orderBy('updated_at', 'asc')
-            ->limit(10)
+            ->limit(30)
             ->get();
 
         foreach ($movies as $movie) {
