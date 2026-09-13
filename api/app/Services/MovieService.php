@@ -5,65 +5,44 @@ namespace App\Services;
 use App\Models\AmcData;
 use App\Models\Movie;
 use Exception;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
-use Aws\Sqs\SqsClient;
-use Aws\Credentials\Credentials;
-use Illuminate\Support\Str;
 
 class MovieService {
 
     public function searchMovie(string $searchTerm): ?array {
         try {
-            $credentials = new Credentials(env('AWS_ACCESS_ID'), env('AWS_ACCESS_KEY'));
-            $sqs = new SqsClient([
-                'region' => 'us-west-1',
-                'credentials' => $credentials,
+            $response = Http::timeout(10)->get('https://www.omdbapi.com/', [
+                'apikey' => env('OMDB_API_KEY'),
+                't' => $searchTerm,
             ]);
 
-            $jobId = (string) Str::uuid();
-            $sqs->sendMessage([
-                'QueueUrl' => env('SQS_QUEUE_URL'),
-                'MessageBody' => json_encode([
-                    'job_id' => $jobId,
-                    'action' => 'scrape_movie',
-                    'payload' => ['search' => $searchTerm],
-                ]),
-            ]);
+            $response->throw();
+            $omdbData = $response->json();
 
-            sleep(3);
-            $start = time();
-            $timeout = 60;
-            
-            $movieData = [];
-            while (time() - $start < $timeout) {
-                $result = $sqs->receiveMessage([
-                    'QueueUrl' => env('SQS_RESULTS_QUEUE_URL'),
-                    'MaxNumberOfMessages' => 10,
-                    'WaitTimeSeconds' => 5
-                ]);
-
-                if (empty($result['Messages'])) {
-                    continue;
-                }
-
-                foreach ($result['Messages'] as $msg) {
-                    $body = json_decode($msg['Body'], true);
-                    $receipt = $msg['ReceiptHandle'];
-
-                    if (($body['job_id'] ?? null) === $jobId) {
-
-                        $sqs->deleteMessage([
-                            'QueueUrl' => env('SQS_RESULTS_QUEUE_URL'),
-                            'ReceiptHandle' => $receipt
-                        ]);
-
-                        $movieData = $body['payload'] ?? [];
-                        break 2;
-                    }
-                }
+            if (($omdbData['Response'] ?? 'False') !== 'True') {
+                return ['title' => $searchTerm];
             }
+
+            $rottenTomatoes = collect($omdbData['Ratings'] ?? [])
+                ->firstWhere('Source', 'Rotten Tomatoes')['Value'] ?? null;
+
+            $movieData = [
+                'title' => $omdbData['Title'] ?? $searchTerm,
+                'description' => $omdbData['Plot'] ?? null,
+                'tomato' => $rottenTomatoes,
+                'imdb' => $omdbData['imdbRating'] ?? null,
+                'image' => ($omdbData['Poster'] ?? 'N/A') !== 'N/A' ? $omdbData['Poster'] : null,
+                'trailer' => null,
+                'rating' => $omdbData['Rated'] ?? null,
+                'year' => $omdbData['Year'] ?? null,
+                'genre' => $omdbData['Genre'] ?? null,
+                'runtime' => $omdbData['Runtime'] ?? null,
+                'services' => null,
+                'releaseDate' => $omdbData['Released'] ?? null,
+            ];
         } catch (Exception $e) {
-            Log::error("Error in scraper: " . $e->getMessage());
+            Log::error('Error fetching movie from OMDb: ' . $e->getMessage());
             return ['title' => $searchTerm];
         }
 
