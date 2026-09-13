@@ -1,0 +1,71 @@
+services:
+  database:
+    image: mysql:8.0
+    environment:
+      MYSQL_DATABASE: watchlist
+      MYSQL_USER: watchlist
+      MYSQL_PASSWORD: watchlist
+      MYSQL_ROOT_PASSWORD: root
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h localhost -u root -proot"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  api:
+    build:
+      context: ./api
+      dockerfile: Dockerfile
+    working_dir: /var/www/html
+    environment:
+      APP_NAME: Watchlist
+      APP_ENV: local
+      APP_DEBUG: "true"
+      APP_KEY: base64:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=
+      APP_URL: http://localhost:8080
+      DB_CONNECTION: mysql
+      DB_HOST: database
+      DB_PORT: 3306
+      DB_DATABASE: watchlist
+      DB_USERNAME: watchlist
+      DB_PASSWORD: watchlist
+      CACHE_DRIVER: file
+      SESSION_DRIVER: file
+      QUEUE_CONNECTION: sync
+    volumes:
+      - ./api:/var/www/html
+      - api_vendor:/var/www/html/vendor
+    ports:
+      - "8080:8000"
+    depends_on:
+      database:
+        condition: service_healthy
+    command: sh -c "php artisan migrate --force && php artisan serve --host=0.0.0.0 --port=8000"
+
+  client:
+    build:
+      context: ./client
+      dockerfile: Dockerfile
+    working_dir: /app
+    environment:
+      HOST: 0.0.0.0
+      PORT: 3000
+      WATCHPACK_POLLING: "true"
+      REACT_APP_WATCHLIST_API_URL: http://localhost:8080/api
+      REACT_APP_MAIN_API_URL: http://localhost:8080
+    volumes:
+      - ./client:/app
+      - client_node_modules:/app/node_modules
+    ports:
+      - "3000:3000"
+    depends_on:
+      - api
+
+volumes:
+  mysql_data:
+  api_vendor:
+  client_node_modules:
