@@ -10,59 +10,104 @@ use Illuminate\Support\Facades\Log;
 
 class MovieService {
 
-    public function searchMovie(string $searchTerm): ?array {
-        try {
-            $response = Http::timeout(10)->get('https://www.omdbapi.com/', [
-                'apikey' => env('OMDB_API_KEY'),
-                't' => $searchTerm,
-            ]);
+public function searchMovie(string $searchTerm): ?array
+{
+    try {
+        $apiKey = env('OMDB_API_KEY');
 
-            $response->throw();
-            $omdbData = $response->json();
+        // First try the full search term
+        $response = Http::timeout(10)->get('https://www.omdbapi.com/', [
+            'apikey' => $apiKey,
+            's' => $searchTerm,
+            'type' => 'movie',
+        ]);
 
-            if (($omdbData['Response'] ?? 'False') !== 'True') {
-                return ['title' => $searchTerm];
+        $response->throw();
+        $omdbData = $response->json();
+
+        // If no results, try progressively shorter phrases
+        if (($omdbData['Response'] ?? 'False') !== 'True') {
+            $words = preg_split('/\s+/', trim($searchTerm));
+
+            while (count($words) > 1) {
+                array_shift($words);
+
+                $fallbackTerm = implode(' ', $words);
+
+                $response = Http::timeout(10)->get('https://www.omdbapi.com/', [
+                    'apikey' => $apiKey,
+                    's' => $fallbackTerm,
+                    'type' => 'movie',
+                ]);
+
+                $response->throw();
+                $omdbData = $response->json();
+
+                if (($omdbData['Response'] ?? 'False') === 'True') {
+                    break;
+                }
             }
+        }
 
-            $rottenTomatoes = collect($omdbData['Ratings'] ?? [])
-                ->firstWhere('Source', 'Rotten Tomatoes')['Value'] ?? null;
-
-            $movieData = [
-                'title' => $omdbData['Title'] ?? $searchTerm,
-                'description' => $omdbData['Plot'] ?? null,
-                'tomato' => $rottenTomatoes,
-                'imdb' => $omdbData['imdbRating'] ?? null,
-                'image' => ($omdbData['Poster'] ?? 'N/A') !== 'N/A' ? $omdbData['Poster'] : null,
-                'trailer' => null,
-                'rating' => $omdbData['Rated'] ?? null,
-                'year' => $omdbData['Year'] ?? null,
-                'genre' => $omdbData['Genre'] ?? null,
-                'runtime' => $omdbData['Runtime'] ?? null,
-                'services' => null,
-                'releaseDate' => $omdbData['Released'] ?? null,
-            ];
-        } catch (Exception $e) {
-            Log::error('Error fetching movie from OMDb: ' . $e->getMessage());
+        if (($omdbData['Response'] ?? 'False') !== 'True') {
             return ['title' => $searchTerm];
         }
 
-        if (!$movieData || !isset($movieData['title'])) {
-            $movieData['title'] = $searchTerm;
+        // Pick the first result
+        $result = $omdbData['Search'][0] ?? null;
+
+        if (!$result) {
+            return ['title' => $searchTerm];
         }
 
-        // Check if movie is playing at AMC
-        $titleCount = 0;
-        if ($movieData) {
-            $titleCount = AmcData::select('*')
-                ->where('title', 'LIKE', "%$searchTerm%")
-                ->orWhere('title', 'LIKE', "%" . $movieData['title'] . "%")
-                ->count();
+        // Now get the full movie details
+        $detailResponse = Http::timeout(10)->get('https://www.omdbapi.com/', [
+            'apikey' => $apiKey,
+            'i' => $result['imdbID'],
+        ]);
+
+        $detailResponse->throw();
+        $omdbData = $detailResponse->json();
+
+        if (($omdbData['Response'] ?? 'False') !== 'True') {
+            return ['title' => $searchTerm];
         }
 
-        $movieData['amc'] = $titleCount >= 1;
+        $rottenTomatoes = collect($omdbData['Ratings'] ?? [])
+            ->firstWhere('Source', 'Rotten Tomatoes')['Value'] ?? null;
 
-        return $movieData;
+        $movieData = [
+            'title' => $omdbData['Title'] ?? $searchTerm,
+            'description' => $omdbData['Plot'] ?? null,
+            'tomato' => $rottenTomatoes,
+            'imdb' => $omdbData['imdbRating'] ?? null,
+            'image' => ($omdbData['Poster'] ?? 'N/A') !== 'N/A'
+                ? $omdbData['Poster']
+                : null,
+            'trailer' => null,
+            'rating' => $omdbData['Rated'] ?? null,
+            'year' => $omdbData['Year'] ?? null,
+            'genre' => $omdbData['Genre'] ?? null,
+            'runtime' => $omdbData['Runtime'] ?? null,
+            'services' => null,
+            'releaseDate' => $omdbData['Released'] ?? null,
+        ];
+
+    } catch (Exception $e) {
+        Log::error('Error fetching movie from OMDb: ' . $e->getMessage());
+
+        return ['title' => $searchTerm];
     }
+
+    // Check if movie is playing at AMC
+    $titleCount = AmcData::where('title', 'LIKE', "%{$searchTerm}%")
+        ->orWhere('title', 'LIKE', "%{$movieData['title']}%")
+        ->count();
+
+    $movieData['amc'] = $titleCount >= 1;
+
+    return $movieData;
+}
 
     public function getRefreshedMovieData(Movie $movie): Movie {
         if ($movieData = $this->searchMovie($movie->search_term ?? $movie->title)) {
