@@ -9,105 +9,118 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
 class MovieService {
-
-public function searchMovie(string $searchTerm): ?array
-{
-    try {
-        $apiKey = env('OMDB_API_KEY');
-
-        // First try the full search term
-        $response = Http::timeout(10)->get('https://www.omdbapi.com/', [
-            'apikey' => $apiKey,
-            's' => $searchTerm,
-            'type' => 'movie',
-        ]);
-
-        $response->throw();
-        $omdbData = $response->json();
-
-        // If no results, try progressively shorter phrases
-        if (($omdbData['Response'] ?? 'False') !== 'True') {
-            $words = preg_split('/\s+/', trim($searchTerm));
-
-            while (count($words) > 1) {
-                array_shift($words);
-
-                $fallbackTerm = implode(' ', $words);
-
-                $response = Http::timeout(10)->get('https://www.omdbapi.com/', [
-                    'apikey' => $apiKey,
-                    's' => $fallbackTerm,
-                    'type' => 'movie',
-                ]);
-
-                $response->throw();
-                $omdbData = $response->json();
-
-                if (($omdbData['Response'] ?? 'False') === 'True') {
-                    break;
+    public function searchMovie(string $searchTerm): ?array {
+        try {
+            $searchTerm = trim($searchTerm);
+            if ($searchTerm === '') {
+                return null;
+            }
+            $response = Http::timeout(10)->get('https://www.omdbapi.com/', ['apikey' => env('OMDB_API_KEY'), 't' => $searchTerm]);
+            $response->throw();
+            $omdbData = $response->json();
+            if (($omdbData['Response'] ?? 'False') === 'True') {
+                $requestedTitle = $this->normalizeMovieTitle($searchTerm);
+                $returnedTitle = $this->normalizeMovieTitle($omdbData['Title'] ?? '');
+                $matchScore = $this->movieTitleMatchScore($requestedTitle, $returnedTitle);
+                if ($matchScore >= 70) {
+                    $omdbData['match_score'] = $matchScore;
+                    return $omdbData;
                 }
             }
+            $searchResponse = Http::timeout(10)->get('https://www.omdbapi.com/', ['apikey' => env('OMDB_API_KEY'), 's' => $searchTerm]);
+            $searchResponse->throw();
+            $searchData = $searchResponse->json();
+            if (($searchData['Response'] ?? 'False') !== 'True') {
+                return ['Title' => $searchTerm, 'title' => $searchTerm,];
+            }
+            $results = $searchData['Search'] ?? [];
+            if (empty($results)) {
+                return ['Title' => $searchTerm, 'title' => $searchTerm,];
+            }
+            $bestMatch = null;
+            $bestScore = 0;
+            foreach ($results as $result) {
+                if (empty($result['Title'])) {
+                    continue;
+                }
+                $candidateTitle = $this->normalizeMovieTitle($result['Title']);
+                $score = $this->movieTitleMatchScore($this->normalizeMovieTitle($searchTerm), $candidateTitle);
+                if ($score > $bestScore) {
+                    $bestScore = $score;
+                    $bestMatch = $result;
+                }
+            }
+            if (!$bestMatch || $bestScore < 90) {
+                return ['Title' => $searchTerm, 'title' => $searchTerm,];
+            }
+            if (!empty($bestMatch['imdbID'])) {
+                $detailResponse = Http::timeout(10)->get('https://www.omdbapi.com/', ['apikey' => env('OMDB_API_KEY'), 'i' => $bestMatch['imdbID']]);
+                $detailResponse->throw();
+                $detailData = $detailResponse->json();
+                if (($detailData['Response'] ?? 'False') === 'True') {
+                    $detailData['match_score'] = $bestScore;
+                    return $detailData;
+                }
+            }
+            $bestMatch['match_score'] = $bestScore;
+            return $bestMatch;
+        } catch (Exception $e) {
+            Log::error('Error searching OMDb: ' . $e->getMessage(), ['search_term' => $searchTerm,]);
+            return ['Title' => $searchTerm, 'title' => $searchTerm,];
         }
-
-        if (($omdbData['Response'] ?? 'False') !== 'True') {
-            return ['title' => $searchTerm];
-        }
-
-        // Pick the first result
-        $result = $omdbData['Search'][0] ?? null;
-
-        if (!$result) {
-            return ['title' => $searchTerm];
-        }
-
-        // Now get the full movie details
-        $detailResponse = Http::timeout(10)->get('https://www.omdbapi.com/', [
-            'apikey' => $apiKey,
-            'i' => $result['imdbID'],
-        ]);
-
-        $detailResponse->throw();
-        $omdbData = $detailResponse->json();
-
-        if (($omdbData['Response'] ?? 'False') !== 'True') {
-            return ['title' => $searchTerm];
-        }
-
-        $rottenTomatoes = collect($omdbData['Ratings'] ?? [])
-            ->firstWhere('Source', 'Rotten Tomatoes')['Value'] ?? null;
-
-        $movieData = [
-            'title' => $omdbData['Title'] ?? $searchTerm,
-            'description' => $omdbData['Plot'] ?? null,
-            'tomato' => $rottenTomatoes,
-            'imdb' => $omdbData['imdbRating'] ?? null,
-            'image' => ($omdbData['Poster'] ?? 'N/A') !== 'N/A'
-                ? $omdbData['Poster']
-                : null,
-            'trailer' => null,
-            'rating' => $omdbData['Rated'] ?? null,
-            'year' => $omdbData['Year'] ?? null,
-            'genre' => $omdbData['Genre'] ?? null,
-            'runtime' => $omdbData['Runtime'] ?? null,
-            'services' => null,
-            'releaseDate' => $omdbData['Released'] ?? null,
-        ];
-
-    } catch (Exception $e) {
-        Log::error('Error fetching movie from OMDb: ' . $e->getMessage());
-
-        return ['title' => $searchTerm];
     }
-
-    // Check if movie is playing at AMC
-    $titleCount = AmcData::where('title', 'LIKE', "%{$searchTerm}%")
-        ->orWhere('title', 'LIKE', "%{$movieData['title']}%")
-        ->count();
-
-    $movieData['amc'] = $titleCount >= 1;
-
-    return $movieData;
-}
+    private function normalizeMovieTitle(string $title): string {
+        $title = mb_strtolower(trim($title));
+        $title = preg_replace('/[\(\[\{]\s*\d{4}\s*[\)\]\}]/', '', $title);
+        $title = preg_replace('/\s+\d{4}$/', '', $title);
+        $title = str_replace(['&', ':', '-', '–', '—', '\'', '"', '.', ',', '!', '?',], [' and ', ' ', ' ', ' ', ' ', '', '', '', '', '', '',], $title);
+        $title = preg_replace('/[^\p{L}\p{N}\s]/u', ' ', $title);
+        $title = preg_replace('/\s+/', ' ', $title);
+        return trim($title);
+    }
+    private function movieTitleMatchScore(string $searchTitle, string $candidateTitle): int {
+        if ($searchTitle === '' || $candidateTitle === '') {
+            return 0;
+        }
+        if ($searchTitle === $candidateTitle) {
+            return 100;
+        }
+        $searchWords = preg_split('/\s+/', $searchTitle);
+        $candidateWords = preg_split('/\s+/', $candidateTitle);
+        $searchWordCount = count($searchWords);
+        $candidateWordCount = count($candidateWords);
+        if ($searchWordCount === 0 || $candidateWordCount === 0) {
+            return 0;
+        }
+        $searchPhrase = implode(' ', $searchWords);
+        $candidatePhrase = implode(' ', $candidateWords);
+        if (str_starts_with($candidatePhrase, $searchPhrase)) {
+            $extraWords = $candidateWordCount - $searchWordCount;
+            if ($extraWords === 1) {
+                return 90;
+            }
+            if ($extraWords === 2) {
+                return 80;
+            }
+            return 70;
+        }
+        if (str_contains($candidatePhrase, $searchPhrase)) {
+            return 40;
+        }
+        $matchingWords = count(array_intersect($searchWords, $candidateWords));
+        $wordMatchRatio = $matchingWords / $searchWordCount;
+        if ($wordMatchRatio < 1.0) {
+            return 0;
+        }
+        $extraWords = $candidateWordCount - $searchWordCount;
+        if ($extraWords === 0) {
+            return 100;
+        }
+        if ($extraWords === 1) {
+            return 85;
+        }
+        return 75;
+    }
 
     public function getRefreshedMovieData(Movie $movie): Movie {
         if ($movieData = $this->searchMovie($movie->search_term ?? $movie->title)) {
